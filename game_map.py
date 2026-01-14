@@ -1,12 +1,17 @@
-import numpy as np #type: ignore
+from __future__ import annotations
+from typing import Iterable,Optional, TYPE_CHECKING
 from tcod.console import Console
-
+import numpy as np #type: ignore
 import tile_types
+
+if TYPE_CHECKING:
+    from entity import Entity
 
 class GameMap:
     #initializer takes width and height and assigns them
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int, entites: Iterable[Entity]=()):
         self.width, self.height = width, height
+        self.entities = set(entites) #set allows us to make an unordered collection of unique elements
         self.tiles = np.full((width, height), fill_value = tile_types.wall, order = "F")
 
         #list slicing allows for access to the specific rows and columns of the tiles array
@@ -16,6 +21,12 @@ class GameMap:
         self.visible = np.full((width, height), fill_value= False, order= "F")
         self.explored = np.full((width, height), fill_value= False, order= "F")
 
+    def get_blocking_entity_at_location(self, location_x: int, location_y: int)->Optional[Entity]:
+        for entity in self.entities:
+            if entity.blocks_movement and entity.x == location_x and entity.y == location_y:
+                return entity
+        return None
+
 
     #Inbounds returns true if the x and y are out of the map bounds
     def in_bounds(self, x:  int, y: int)->bool:
@@ -23,4 +34,11 @@ class GameMap:
     
     def render(self, console: Console)->None:
         #Using the Console class’s tiles_rgb method, we can quickly render the entire map
-        console.rgb[0:self.width, 0:self.height] = np.select( condlist=[self.visible, self.explored], choicelist=[self.tiles["light"], self.tiles["dark"]], default=tile_types.SHROUD  )
+        console.rgb[0:self.width, 0:self.height] = np.select( 
+            condlist=[self.visible, self.explored], 
+            choicelist=[self.tiles["light"], 
+            self.tiles["dark"]], 
+            default=tile_types.SHROUD )
+        for entity in self.entities:
+              if self.visible[entity.x, entity.y]:
+                console.print(entity.x, entity.y, entity.glyph, fg=entity.colour)
