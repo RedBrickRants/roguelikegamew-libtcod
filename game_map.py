@@ -13,6 +13,9 @@ class GameMap:
         #[row, columns]
         #self.tiles[30:33, 22]=tile_types.wall
 
+        self.visible = np.full((width, height), fill_value= False, order= "F")
+        self.explored = np.full((width, height), fill_value= False, order= "F")
+
 
     #Inbounds returns true if the x and y are out of the map bounds
     def in_bounds(self, x:  int, y: int)->bool:
@@ -20,4 +23,4 @@ class GameMap:
     
     def render(self, console: Console)->None:
         #Using the Console class’s tiles_rgb method, we can quickly render the entire map
-        console.rgb[0:self.width, 0:self.height] = self.tiles["dark"]
+        console.rgb[0:self.width, 0:self.height] = np.select( condlist=[self.visible, self.explored], choicelist=[self.tiles["light"], self.tiles["dark"]], default=tile_types.SHROUD  )
