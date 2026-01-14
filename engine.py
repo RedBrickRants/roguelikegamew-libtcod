@@ -24,6 +24,7 @@ class Engine:
                 action.perform(self, self.player)
                 
     def render(self, console: Console, context: Context) -> None:
+        #print(f"this is: {self.game_map.render(console)}")
         self.game_map.render(console)
         for entity in self.entities:
               console.print(entity.x, entity.y, entity.glyph, fg=entity.colour)
