@@ -1,5 +1,4 @@
 from typing import Tuple
-
 class Entity:
     def __init__(self, x: int, y: int, glyph: str, colour: Tuple[int, int, int]):
         self.x = x
@@ -10,3 +9,5 @@ class Entity:
     def move(self, dx:int, dy:int) -> None:
         self.x +=dx
         self.y +=dy      
+
+
