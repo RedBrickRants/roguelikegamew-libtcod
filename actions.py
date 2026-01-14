@@ -14,13 +14,35 @@ class Action:
 class EscapeAction(Action):
     def perform (self, engine: Engine, entity: Entity)-> None:
         raise SystemExit()
-
-class MovementAction(Action):
+    
+class ActionWithADirection(Action):
     def __init__(self, dx: int, dy: int):
         super().__init__()
         self.dx = dx
         self.dy = dy
 
+    def perform(self, engine: Engine, entity:Entity)-> None:
+        return NotImplementedError
+    
+class BumpAction(ActionWithADirection):
+    def perform(self, engine:Engine, entity:Entity):
+        dest_x = entity.x + self.dx
+        dest_y = entity.y+ self.dy
+
+        if engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
+            return MeleeAction(self.dx, self.dy).perform(engine, entity)
+        else:
+            return MovementAction(self.dx, self.dy).perform(engine, entity)
+class MeleeAction(ActionWithADirection):
+    def perform(self, engine:Engine, entity:Entity)-> None:
+        dest_x = entity.x + self.dx
+        dest_y = entity.y+ self.dy
+        target = engine.game_map.get_blocking_entity_at_location(dest_x, dest_y)
+        if not target:
+            return
+
+        print(f"{target.name} screams obsenities at you for smacking it!")
+class MovementAction(ActionWithADirection):
     def perform (self, engine: Engine, entity: Entity)-> None:
         dest_x = entity.x +self.dx
         dest_y = entity.y + self.dy
@@ -28,5 +50,7 @@ class MovementAction(Action):
         if not engine.game_map.in_bounds(dest_x, dest_y):
             return
         if not engine.game_map.tiles["walkable"][dest_x, dest_y]:
+            return
+        if engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
             return
         entity.move(self.dx, self.dy)
