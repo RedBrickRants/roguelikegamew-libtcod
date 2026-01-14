@@ -5,11 +5,13 @@ import numpy as np #type: ignore
 import tile_types
 
 if TYPE_CHECKING:
+    from engine import Engine
     from entity import Entity
 
 class GameMap:
     #initializer takes width and height and assigns them
-    def __init__(self, width: int, height: int, entites: Iterable[Entity]=()):
+    def __init__(self,engine: Engine, width: int, height: int, entites: Iterable[Entity]=()):
+        self.engine = engine
         self.width, self.height = width, height
         self.entities = set(entites) #set allows us to make an unordered collection of unique elements
         self.tiles = np.full((width, height), fill_value = tile_types.wall, order = "F")

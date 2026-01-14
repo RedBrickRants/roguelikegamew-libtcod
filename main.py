@@ -6,7 +6,7 @@ import constants as const
 from entity import Entity
 from engine import Engine
 from procgen import generate_dungeon
-from input_handlers import EventHandler
+
 
 
 
@@ -17,11 +17,10 @@ def main() -> None:
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
     )
 
-    event_handler = EventHandler()
     player = copy.deepcopy(entity_factories.player)
-    
-    game_map = generate_dungeon(max_rooms=const.MAX_ROOMS, room_min_size=const.ROOM_MIN_SIZE, room_max_size=const.ROOM_MAX_SIZE, max_monsters_per_room = const.MAX_MONSTERS_PER_ROOM, map_width=const.MAP_WIDTH, map_height=const.MAP_HEIGHT, player=player)
-    engine = Engine(event_handler=event_handler,game_map = game_map, player=player)
+    engine = Engine(player= player)
+    engine.game_map = generate_dungeon(max_rooms=const.MAX_ROOMS, room_min_size=const.ROOM_MIN_SIZE, room_max_size=const.ROOM_MAX_SIZE, max_monsters_per_room = const.MAX_MONSTERS_PER_ROOM, map_width=const.MAP_WIDTH, map_height=const.MAP_HEIGHT, engine = engine)
+    engine.update_fov()
 
     with tcod.context.new(
         columns = const.SCREEN_WIDTH,
@@ -34,9 +33,7 @@ def main() -> None:
         while True:
             engine.render(console=root_console, context=context)
 
-            events = tcod.event.wait()
-
-            engine.handle_events(events)
+            engine.event_handler.handle_events()
 
 
 if __name__ == "__main__":
