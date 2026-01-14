@@ -1,42 +1,49 @@
-#main.py
 import tcod
 import constants as const
-from actions import Action,  EscapeAction, MovementAction
+from actions import EscapeAction, MovementAction
+from entity import Entity
 from input_handlers import EventHandler
 
-def main():
-    
-    event_handler = EventHandler()
-    player_x = const.SCREEN_WIDTH//2
-    player_y = const.SCREEN_WIDTH//2
+
+def main() -> None:
+
+    player_x = const.SCREEN_WIDTH //2
+    player_y = const.SCREEN_HEIGHT //2
 
     tileset = tcod.tileset.load_tilesheet(
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
     )
-    console = tcod.console.Console(const.SCREEN_WIDTH, const.SCREEN_HEIGHT, order="F") 
+
+    event_handler = EventHandler()
+
     with tcod.context.new(
-        columns= console.width, rows= console.height, tileset= tileset
-        ) as context:
-        
-        #Game Loop:
+        const.SCREEN_WIDTH,
+        const.SCREEN_HEIGHT,
+        tileset=tileset,
+        title="Yet Another Roguelike Tutorial",
+        vsync=True,
+    ) as context:
+        root_console = tcod.console.Console(const.SCREEN_WIDTH, const.SCREEN_HEIGHT, order="F")
         while True:
-            console.clear()
-            console.print(player_x,player_y, string="@")
-            context.present(console)
+            root_console.print(x=player_x, y=player_y, string="@")
+
+            context.present(root_console)
+
+            root_console.clear()
 
             for event in tcod.event.wait():
                 action = event_handler.dispatch(event)
-                match action:
-                    case None:
-                        print ("No action")
-                        continue
-                    case MovementAction():
-                        print ("move")
-                        player_x += action.dx
-                        player_y +=action.dy
-                    case EscapeAction():
-                        print("leave")
-                        raise SystemExit
-                    
+
+                if action is None:
+                    continue
+
+                if isinstance(action, MovementAction):
+                    player_x += action.dx
+                    player_y += action.dy
+
+                elif isinstance(action, EscapeAction):
+                    raise SystemExit()
+
+
 if __name__ == "__main__":
     main()
