@@ -21,8 +21,9 @@ class Engine:
 
     def handle_enemy_turns(self)-> None:
          for entity in self.game_map.entities - {self.player}:
-              print(f"The {entity.name} wonders when it will get to take a real turn.")
-    
+              if entity.ai:
+                   entity.ai.perform()
+
     def update_fov(self) -> None:
          self.game_map.visible[:] = compute_fov(
          self.game_map.tiles["transparent"], (self.player.x, self.player.y), radius=6

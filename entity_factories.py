@@ -1,6 +1,8 @@
-from entity import Entity
+from components.ai import HostileEnemy
+from components.fighter import Fighter
+from entity import Actor
 
-player = Entity(glyph="@", colour=(255, 255, 255), name="Player", blocks_movement=True)
+player = Actor(glyph="@", colour=(255, 255, 255), name="Player",ai_cls=HostileEnemy,  fighter=Fighter(hp=30, defense=2, power=5),)
 
-orc = Entity(glyph="o", colour=(63, 127, 63), name="Orc", blocks_movement=True)
-troll = Entity(glyph="T", colour=(0, 127, 0), name="Troll", blocks_movement=True)
+orc = Actor(glyph="o", colour=(63, 127, 63), name="Orc",ai_cls=HostileEnemy, fighter=Fighter(hp=10, defense=0, power=3),)
+troll = Actor(glyph="T", colour=(0, 127, 0), name="Troll",ai_cls=HostileEnemy, fighter=Fighter(hp=16, defense=1, power=4),)
