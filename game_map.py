@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Iterable,Iterator, Optional, TYPE_CHECKING
 from tcod.console import Console
-from entity import Actor
+from entity import Actor, Item
 import numpy as np #type: ignore
 import tile_types
 
@@ -36,6 +36,9 @@ class GameMap:
             if entity.blocks_movement and entity.x == location_x and entity.y == location_y:
                 return entity
         return None
+    @property
+    def items(self)-> Iterator[Item]:
+        yield from (entity for entity in self.entities if isinstance(entity, Item))
     
     def get_actor_at_location(self, x: int, y: int)-> Optional[Actor]:
         for actor in self.actors:

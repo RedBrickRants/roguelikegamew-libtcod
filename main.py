@@ -1,4 +1,5 @@
 import copy
+import traceback
 import tcod
 import colour
 
@@ -20,7 +21,7 @@ def main() -> None:
 
     player = copy.deepcopy(entity_factories.player)
     engine = Engine(player= player)
-    engine.game_map = generate_dungeon(max_rooms=const.MAX_ROOMS, room_min_size=const.ROOM_MIN_SIZE, room_max_size=const.ROOM_MAX_SIZE, max_monsters_per_room = const.MAX_MONSTERS_PER_ROOM, map_width=const.MAP_WIDTH, map_height=const.MAP_HEIGHT, engine = engine)
+    engine.game_map = generate_dungeon(max_rooms=const.MAX_ROOMS, room_min_size=const.ROOM_MIN_SIZE, room_max_size=const.ROOM_MAX_SIZE, max_monsters_per_room = const.MAX_MONSTERS_PER_ROOM,max_items_per_room=const.MAX_ITEMS_PER_ROOM, map_width=const.MAP_WIDTH, map_height=const.MAP_HEIGHT, engine = engine)
     engine.update_fov()
     engine.message_log.add_message("Hello and welcome to yet another dungeon!", colour.welcome_text)
 
@@ -36,8 +37,15 @@ def main() -> None:
             root_console.clear()
             engine.event_handler.on_render(console=root_console)
             context.present(root_console)
-
-            engine.event_handler.handle_events(context)
+            try: 
+                for event in tcod.event.wait():
+                    context.convert_event(event)
+                    engine.event_handler.handle_events(event)
+            except Exception:
+                traceback.print_exc()
+                #then print message to message log
+                engine.message_log.add_message(traceback.format_exc(), colour.error)
+            
 
 
 if __name__ == "__main__":
