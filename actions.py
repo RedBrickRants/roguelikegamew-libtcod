@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import Optional, Tuple, TYPE_CHECKING
 
+import colour
 if TYPE_CHECKING:
     from engine import Engine
     from entity import Actor, Entity
@@ -62,13 +63,15 @@ class MeleeAction(ActionWithADirection):
         
         damage = self.entity.fighter.power - target.fighter.defense
         attack_description = f"{self.entity.name.capitalize()} attacks {target.name}"
+        if self.entity is self.engine.player:
+            attac_colour = colour.player_atk
+        else: 
+            attac_colour = colour.enemy_atk
         if damage > 0:
-            print(f"{attack_description} for {damage} damage.")
+            self.engine.message_log.add_message(f"{attack_description} for {damage} damage.",attac_colour)
             target.fighter.hp -= damage
         else:
-            print(f"{attack_description} but does no damage")
-
-        print(f"{target.name} screams obsenities at you for smacking it!")
+            self.engine.message_log.add_message(f"{attack_description} but does no damage", attac_colour)
 class MovementAction(ActionWithADirection):
     def perform (self)-> None:
         dest_x, dest_y = self.dest_xy

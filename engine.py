@@ -7,6 +7,8 @@ from tcod.map import compute_fov
 
 
 from input_handlers import MainGameEventHandler
+from message_log import MessageLog
+from render_funtions import render_bar
 
 if TYPE_CHECKING:
      from entity import Actor
@@ -16,6 +18,7 @@ class Engine:
     game_map: GameMap
     def __init__(self, player: Actor):
         self.event_handler : MainGameEventHandler = MainGameEventHandler(self)
+        self.message_log = MessageLog()
         self.player = player
 
 
@@ -29,10 +32,12 @@ class Engine:
          self.game_map.tiles["transparent"], (self.player.x, self.player.y), radius=6
          ) 
          self.game_map.explored |= self.game_map.visible
+
     def render(self, console: Console, context: Context) -> None:
         #print(f"this is: {self.game_map.render(console)}")
         self.game_map.render(console)
-        console.print(x = 1, y = 47, string = f"HP: {self.player.fighter.hp}/{self.player.fighter.max_hp}")
+        self.message_log.render(console=console, x=21, y=45, width=40, height=5)
+        render_bar(console=console, current_value=self.player.fighter.hp, maximum_value= self.player.fighter.max_hp, total_width=20)
         context.present(console)
         console.clear()
         
