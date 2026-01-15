@@ -2,6 +2,7 @@ from __future__ import annotations
 from render_order import RenderOrder
 from typing import Optional, Tuple,Type, TypeVar, TYPE_CHECKING, Union
 import copy
+import math
 if TYPE_CHECKING:
     from components.ai import BaseAI
     from components.consumable import Consumable
@@ -57,6 +58,12 @@ class Entity:
                     self.gamemap.entities.remove(self)
             self.parent = gamemap
             gamemap.entities.add(self)
+    
+    def distance(self, x:int, y: int)-> float:
+        """
+        Return the distance between the current entity and the given (x, y) coordinate.
+        """
+        return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
     def move(self, dx:int, dy:int) -> None:
         self.x +=dx
