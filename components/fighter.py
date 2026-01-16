@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from components.base_component import BaseComponent
-from input_handlers import GameOverEventHandler
 from render_order import RenderOrder
 
 import colour
@@ -42,7 +41,6 @@ class Fighter(BaseComponent):
         if self.engine.player is self.parent:
             death_message = "You Died!"
             death_message_colour = colour.player_die
-            self.engine.event_handler = GameOverEventHandler(self.engine)
         else:
             death_message = f"{self.parent.name} is dead!"
             death_message_colour = colour.enemy_die
