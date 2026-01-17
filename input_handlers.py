@@ -7,6 +7,7 @@ import tcod
 import colour
 import exceptions
 import actions
+import os
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -82,6 +83,32 @@ class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
 
     def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
         raise SystemExit()
+
+class PopupMessage(BaseEventHandler):
+    """Display a popup text window."""
+
+    def __init__(self, parent_handler: BaseEventHandler, text: str):
+        self.parent = parent_handler
+        self.text = text
+
+    def on_render(self, console: tcod.Console) -> None:
+        """Render the parent and dim the result, then print the message on top."""
+        self.parent.on_render(console)
+        console.rgb["fg"] //= 8
+        console.rgb["bg"] //= 8
+
+        console.print(
+            console.width // 2,
+            console.height // 2,
+            self.text,
+            fg=colour.white,
+            bg=colour.black,
+            alignment=tcod.libtcodpy.CENTER,
+        )
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[BaseEventHandler]:
+        """Any key returns to the parent handler."""
+        return self.parent
 
 class EventHandler(BaseEventHandler):
     def __init__(self, engine: Engine):
@@ -380,9 +407,18 @@ class MainGameEventHandler(EventHandler):
         return action
     
 class GameOverEventHandler(EventHandler):
+    def on_quit(self) -> None:
+        """Handle exiting out of a finished game."""
+        if os.path.exists("savegame.sav"):
+            os.remove("savegame.sav")  # Deletes the active save file.
+        raise exceptions.QuitWithoutSaving()  # Avoid saving a finished game.
+
+    def ev_quit(self, event: tcod.event.Quit) -> None:
+        self.on_quit()
+
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
-        if event.sym == tcod.event.KeySym.ESCAPE:
-            raise SystemExit()
+        if event.sym == tcod.event.KeySym.ESCAPE or event.sym == tcod.event.KeySym.q:
+            self.on_quit()
     
 class LogHistoryViewer(EventHandler):
     #prints the history of  the log ona  larger window which can be navigated

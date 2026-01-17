@@ -1,18 +1,21 @@
-import copy
+
 import traceback
 import tcod
 import colour
 
-import entity_factories
+import setup_game
 import constants as const
 import exceptions
 import input_handlers
 from entity import Entity
-from engine import Engine
-from procgen import generate_dungeon
 
 
 
+def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
+    """If the current event handler has an active Engine then save it."""
+    if isinstance(handler, input_handlers.EventHandler):
+        handler.engine.save_as(filename)
+        print("Game saved.")
 
 def main() -> None:
 
@@ -21,12 +24,8 @@ def main() -> None:
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
     )
 
-    player = copy.deepcopy(entity_factories.player)
-    engine = Engine(player= player)
-    engine.game_map = generate_dungeon(max_rooms=const.MAX_ROOMS, room_min_size=const.ROOM_MIN_SIZE, room_max_size=const.ROOM_MAX_SIZE, max_monsters_per_room = const.MAX_MONSTERS_PER_ROOM,max_items_per_room=const.MAX_ITEMS_PER_ROOM, map_width=const.MAP_WIDTH, map_height=const.MAP_HEIGHT, engine = engine)
-    engine.update_fov()
-    engine.message_log.add_message("Hello and welcome to yet another dungeon!", colour.welcome_text)
-    handler: input_handlers.BaseEventHandler = input_handlers.MainGameEventHandler(engine)
+    
+    handler: input_handlers.BaseEventHandler = setup_game.MainMenu()
 
     with tcod.context.new(
         columns = const.SCREEN_WIDTH,
@@ -56,10 +55,10 @@ def main() -> None:
         except exceptions.QuitWithoutSaving:
             raise
         except SystemExit:  # Save and quit.
-            # TODO: Add the save function here
+            save_game(handler, "savegame.sav")
             raise
         except BaseException:  # Save on any other unexpected exception.
-            # TODO: Add the save function here
+            save_game(handler, "savegame.sav")
             raise
             
 
