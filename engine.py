@@ -39,6 +39,7 @@ class Engine:
           self.game_map.tiles["transparent"], (self.player.x, self.player.y), radius=6
           ) 
           self.game_map.explored |= self.game_map.visible
+          
      def render(self, console: Console) -> None:
           #print(f"this is: {self.game_map.render(console)}")
           self.game_map.render(console)

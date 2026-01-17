@@ -11,12 +11,12 @@ if TYPE_CHECKING:
     from entity import Entity
 
 max_items_by_floor = [
-    (1, 1),
+    (0, 1),
     (4, 2),
 ]
 
 max_monsters_by_floor = [
-    (1, 2),
+    (0, 2),
     (4, 3),
     (6, 5),
 ]
@@ -103,6 +103,7 @@ class RectRoom:
                and self.y1 <=other.y2 
                and self.y2 >=other.y1
                )
+    
 def place_entities(room: RectRoom, station: GameMap, floor_number: int,) -> None:
     number_of_monsters = random.randint(
         0, get_max_value_for_floor(max_monsters_by_floor, floor_number)
@@ -167,10 +168,12 @@ def generate_station(max_rooms: int, room_min_size: int, room_max_size: int, map
             center_of_last_room = new_room.center
         place_entities(new_room, station, engine.game_world.current_floor)
 
-        station.tiles[center_of_last_room] = tile_types.down_stairs
-        station.downstairs_location = center_of_last_room
         station.tiles[center_of_first_room] = tile_types.up_stairs
         station.upstairs_location = center_of_first_room
+
+        station.tiles[center_of_last_room] = tile_types.down_stairs
+        station.downstairs_location = center_of_last_room
+
         rooms.append(new_room)
 
     return station

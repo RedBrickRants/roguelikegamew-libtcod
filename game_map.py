@@ -4,6 +4,7 @@ from tcod.console import Console
 from entity import Actor, Item
 import numpy as np #type: ignore
 import tile_types
+import colour
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -84,8 +85,7 @@ class GameWorld:
         max_rooms: int,
         room_min_size: int,
         room_max_size: int,
-        current_floor: int = 0,
-        floors:List[GameMap] = [] 
+        current_floor: int = 0, 
     ):
         self.engine = engine
 
@@ -98,17 +98,45 @@ class GameWorld:
         self.room_max_size = room_max_size
 
         self.current_floor = current_floor
+        self.floors: List[GameMap] = []
+
+        
 
     def store_floor(self):
-        #TODO: Add code to save previous floor data
-        pass   
+        if self.engine.player not in self.engine.game_map.entities:
+            self.engine.game_map.entities.add(self.engine.player)
+        self.floors.append(self.engine.game_map)  
+
+    def traverse_floors(self, direction: str)-> None:
+        if direction == "down":
+            self.floors.append(self.engine.game_map)
+
+            self.current_floor +=1
+            if self.current_floor < len(self.floors):
+                self.engine.game_map = self.floors[self.current_floor]
+                print(self.engine.player in self.engine.game_map.entities)
+            else:
+                new_floor = self.generate_floor()
+                self.floors.append(new_floor)
+                self.engine.game_map = new_floor
+                
+        if direction == "up":
+            if self.current_floor ==0:
+                self.engine.message_log.add_message("You cant go back up!",colour.descend)
+                return
+            self.current_floor -=1
+            self.engine.game_map = self.floors[self.current_floor]
+
+            if self.engine.player not in self.engine.game_map.entities:
+                self.engine.game_map.entities.add(self.engine.player)
+            self.engine.player.x, self.engine.player.y = self.engine.game_map.downstairs_location
+            
+
 
     def generate_floor(self) -> None:
         from procgen import generate_station
 
-        self.current_floor += 1
-
-        self.engine.game_map = generate_station(
+        new_floor = generate_station(
             max_rooms=self.max_rooms,
             room_min_size=self.room_min_size,
             room_max_size=self.room_max_size,
@@ -116,3 +144,5 @@ class GameWorld:
             map_height=self.map_height,
             engine=self.engine,
         )
+        return new_floor
+        
