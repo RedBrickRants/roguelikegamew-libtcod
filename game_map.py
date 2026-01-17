@@ -109,16 +109,20 @@ class GameWorld:
 
     def traverse_floors(self, direction: str)-> None:
         if direction == "down":
-            self.floors.append(self.engine.game_map)
+            if not self.floors:
+                self.floors.append(self.engine.game_map)
 
-            self.current_floor +=1
-            if self.current_floor < len(self.floors):
-                self.engine.game_map = self.floors[self.current_floor]
-                print(self.engine.player in self.engine.game_map.entities)
+            next_floor = self.current_floor + 1
+            if next_floor < len(self.floors):
+                self.engine.game_map = self.floors[next_floor]
+                self.engine.player.place(*self.engine.game_map.upstairs_location, self.engine.game_map)
+                self.current_floor = next_floor
             else:
                 new_floor = self.generate_floor()
-                self.floors.append(new_floor)
                 self.engine.game_map = new_floor
+                self.floors.append(self.engine.game_map)
+                self.engine.player.place(*self.engine.game_map.upstairs_location, self.engine.game_map)
+                self.current_floor+=1
                 
         if direction == "up":
             if self.current_floor ==0:
@@ -130,6 +134,39 @@ class GameWorld:
             if self.engine.player not in self.engine.game_map.entities:
                 self.engine.game_map.entities.add(self.engine.player)
             self.engine.player.x, self.engine.player.y = self.engine.game_map.downstairs_location
+
+    """def traverse_floors(self, direction: str) -> None:
+        if direction == "down":
+            self.current_floor += 1
+            
+            # Ensure floors list is big enough
+            while len(self.floors) <= self.current_floor:
+                self.floors.append(None)
+            
+            # Store the floor we're leaving
+            self.floors[self.current_floor - 1] = self.engine.game_map
+            
+            if self.floors[self.current_floor] is None:
+                # Generate new floor
+                new_floor = self.generate_floor()
+                self.floors[self.current_floor] = new_floor
+                self.engine.game_map = new_floor
+            else:
+                # Load existing floor
+                self.engine.game_map = self.floors[self.current_floor]
+                self.engine.player.place(*self.engine.game_map.upstairs_location, self.engine.game_map)
+                
+        if direction == "up":
+            if self.current_floor == 0:
+                self.engine.message_log.add_message("You cant go back up!", colour.descend)
+                return
+            
+            # Store current floor
+            self.floors[self.current_floor] = self.engine.game_map
+            
+            self.current_floor -= 1
+            self.engine.game_map = self.floors[self.current_floor]
+            self.engine.player.place(*self.engine.game_map.downstairs_location, self.engine.game_map)"""
             
 
 
