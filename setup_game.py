@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Optional
 from engine import Engine
-from procgen import generate_dungeon
+from game_map import GameWorld
 
 import tcod
 import copy
@@ -31,16 +31,17 @@ def new_game() -> Engine:
     
     player = copy.deepcopy(entity_factories.player)
     engine = Engine(player= player)
-    engine.game_map = generate_dungeon(
+    engine.game_world = GameWorld(
+        engine=engine,
         max_rooms=max_rooms,
         room_min_size=room_min_size,
         room_max_size=room_max_size,
         map_width=map_width,
         map_height=map_height,
         max_monsters_per_room=max_monsters_per_room,
-        max_items_per_room=max_items_per_room,
-        engine=engine,    
+        max_items_per_room=max_items_per_room,    
     )
+    engine.game_world.generate_floor()
     engine.update_fov()
 
     engine.message_log.add_message(
