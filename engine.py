@@ -44,9 +44,9 @@ class Engine:
           self.game_map.render(console)
           self.message_log.render(console=console, x=21, y=45, width=40, height=5)
           render_functions.render_bar(console=console, current_value=self.player.fighter.hp, maximum_value= self.player.fighter.max_hp, total_width=20)
-          render_functions.render_dungeon_level(
+          render_functions.render_station_level(
             console=console,
-            dungeon_level=self.game_world.current_floor,
+            station_level=self.game_world.current_floor,
             location=(0, 47),
           )
           render_functions.render_names_at_mouse_location(

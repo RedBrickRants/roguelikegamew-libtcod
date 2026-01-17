@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Iterable,Iterator, Optional, TYPE_CHECKING
+from typing import List, Iterable,Iterator, Optional, TYPE_CHECKING
 from tcod.console import Console
 from entity import Actor, Item
 import numpy as np #type: ignore
@@ -24,6 +24,7 @@ class GameMap:
         self.visible = np.full((width, height), fill_value= False, order= "F")
         self.explored = np.full((width, height), fill_value= False, order= "F")
         self.downstairs_location = (0, 0)
+        self.upstairs_location = (0,0)
 
     @property
     def gamemap(self)-> GameMap:
@@ -83,7 +84,8 @@ class GameWorld:
         max_rooms: int,
         room_min_size: int,
         room_max_size: int,
-        current_floor: int = 0
+        current_floor: int = 0,
+        floors:List[GameMap] = [] 
     ):
         self.engine = engine
 
@@ -97,16 +99,16 @@ class GameWorld:
 
         self.current_floor = current_floor
 
-    def previous_floor(self):
+    def store_floor(self):
         #TODO: Add code to save previous floor data
         pass   
 
     def generate_floor(self) -> None:
-        from procgen import generate_dungeon
+        from procgen import generate_station
 
         self.current_floor += 1
 
-        self.engine.game_map = generate_dungeon(
+        self.engine.game_map = generate_station(
             max_rooms=self.max_rooms,
             room_min_size=self.room_min_size,
             room_max_size=self.room_max_size,

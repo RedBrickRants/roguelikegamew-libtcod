@@ -110,6 +110,8 @@ class Actor(Entity):
     @property
     def is_alive(self)->bool:
         return bool(self.ai)
+    
+    
 class Item(Entity):
     def __init__(
             self, 

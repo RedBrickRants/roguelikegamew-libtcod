@@ -103,7 +103,7 @@ class RectRoom:
                and self.y1 <=other.y2 
                and self.y2 >=other.y1
                )
-def place_entities(room: RectRoom, dungeon: GameMap, floor_number: int,) -> None:
+def place_entities(room: RectRoom, station: GameMap, floor_number: int,) -> None:
     number_of_monsters = random.randint(
         0, get_max_value_for_floor(max_monsters_by_floor, floor_number)
     )
@@ -122,8 +122,8 @@ def place_entities(room: RectRoom, dungeon: GameMap, floor_number: int,) -> None
     for entity in monsters + items:
         x = random.randint(room.x1 +1, room.x2-1)
         y = random.randint(room.y1 +1, room.y2 -1)
-        if not any(entity.x ==x and entity.y == y for entity in dungeon.entities):
-            entity.spawn(dungeon, x, y)
+        if not any(entity.x ==x and entity.y == y for entity in station.entities):
+            entity.spawn(station, x, y)
 
 #create L shaped tunels between these two points
 def tunnels_between(start: Tuple[int, int], end: Tuple[int, int]) -> Iterator[Tuple[int, int]]:
@@ -139,35 +139,38 @@ def tunnels_between(start: Tuple[int, int], end: Tuple[int, int]) -> Iterator[Tu
     for x, y in tcod.los.bresenham( (corner_x, corner_y), (x2, y2)).tolist():
         yield x, y #special return that returns items one at a time instead of all at once like return
 
-def generate_dungeon(max_rooms: int, room_min_size: int, room_max_size: int, map_width, map_height, engine: Engine)-> GameMap:
+def generate_station(max_rooms: int, room_min_size: int, room_max_size: int, map_width, map_height, engine: Engine)-> GameMap:
     player = engine.player
-    dungeon = GameMap(engine, map_width, map_height, entites=[player])
+    station = GameMap(engine, map_width, map_height, entites=[player])
     rooms: List[RectRoom] = []
     center_of_last_room = (0, 0)
+    center_of_first_room = (0,0)
 
     for room in range(max_rooms):
         room_width = random.randint(room_min_size, room_max_size)
         room_height = random.randint(room_min_size, room_max_size)
 
-        x = random.randint(0, dungeon.width - room_width -1)
-        y = random.randint(0, dungeon.height - room_height - 1)
+        x = random.randint(0, station.width - room_width -1)
+        y = random.randint(0, station.height - room_height - 1)
         new_room = RectRoom(x, y, room_width, room_height)
 
         if any(new_room.intersect(other_room)for other_room in rooms):
             continue
-        dungeon.tiles[new_room.area] = tile_types.floor
+        station.tiles[new_room.area] = tile_types.floor
 
         if len(rooms) == 0:
-            player.place(*new_room.center, dungeon)
+            center_of_first_room = (new_room.center)
+            player.place(*new_room.center, station)
         else:
             for x, y in tunnels_between(rooms[-1].center, new_room.center):
-                dungeon.tiles[x, y] = tile_types.floor
+                station.tiles[x, y] = tile_types.floor
             center_of_last_room = new_room.center
-        place_entities(new_room, dungeon, engine.game_world.current_floor)
+        place_entities(new_room, station, engine.game_world.current_floor)
 
-        dungeon.tiles[center_of_last_room] = tile_types.down_stairs
-        dungeon.downstairs_location = center_of_last_room
-
+        station.tiles[center_of_last_room] = tile_types.down_stairs
+        station.downstairs_location = center_of_last_room
+        station.tiles[center_of_first_room] = tile_types.up_stairs
+        station.upstairs_location = center_of_first_room
         rooms.append(new_room)
 
-    return dungeon
+    return station

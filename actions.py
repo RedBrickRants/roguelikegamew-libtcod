@@ -80,6 +80,7 @@ class WaitAction(Action):
     def perform(self)-> None:
         pass
 
+
 class TakeStairsAction(Action):
     def perform(self) -> None:
         """
@@ -89,6 +90,10 @@ class TakeStairsAction(Action):
             self.engine.game_world.generate_floor()
             self.engine.message_log.add_message(
                 "You descend the staircase.", colour.descend
+            )
+        elif (self.entity.x, self.entity.y) == self.engine.game_map.upstairs_location:
+            self.engine.message_log.add_message(
+                "these are the upstairs they're not implemented yet.", colour.descend
             )
         else:
             raise exceptions.Impossible("There are no stairs here.")
@@ -138,7 +143,6 @@ class MeleeAction(ActionWithADirection):
             target.fighter.hp -= damage
         else:
             self.engine.message_log.add_message(f"{attack_description} but does no damage", attac_colour)
-
 
 class MovementAction(ActionWithADirection):
     def perform (self)-> None:

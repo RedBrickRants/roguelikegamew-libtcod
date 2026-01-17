@@ -26,15 +26,15 @@ def render_bar(
 
     console.print(x=1, y=45, string=f"HP:{current_value}/{maximum_value}", fg=colour.bar_text)
 
-def render_dungeon_level(
-    console: console.Console, dungeon_level: int, location: Tuple[int, int]
+def render_station_level(
+    console: console.Console, station_level: int, location: Tuple[int, int]
 ) -> None:
     """
     Render the level the player is currently on, at the given location.
     """
     x, y = location
 
-    console.print(x=x, y=y, string=f"Dungeon level: {dungeon_level}")
+    console.print(x=x, y=y, string=f"station level: {station_level}")
 
 
 
