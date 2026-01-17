@@ -1,14 +1,15 @@
 from components.ai import HostileEnemy
-from components import consumable
+from components import consumable, equippable
+from components.equipment import Equipment
 from components.fighter import Fighter
 from components.inventory import Inventory
 from components.level import Level
 from entity import Actor, Item
 
-player = Actor(glyph="@", colour=(255, 255, 255), name="Player",ai_cls=HostileEnemy,  fighter=Fighter(hp=30, defence=2, power=5),inventory=Inventory(capacity=26),level=Level(level_up_base=200),)
+player = Actor(glyph="@", colour=(255, 255, 255), name="Player",ai_cls=HostileEnemy,equipment=Equipment(),  fighter=Fighter(hp=30, base_defence=2, base_power=5),inventory=Inventory(capacity=26),level=Level(level_up_base=200),)
 
-orc = Actor(glyph="o", colour=(63, 127, 63), name="Orc",ai_cls=HostileEnemy, fighter=Fighter(hp=10, defence=0, power=3),inventory=Inventory(capacity=0),level=Level(xp_given=35),)
-troll = Actor(glyph="T", colour=(0, 127, 0), name="Troll",ai_cls=HostileEnemy, fighter=Fighter(hp=16, defence=1, power=4),inventory=Inventory(capacity=0),level=Level(xp_given=100),)
+orc = Actor(glyph="o", colour=(63, 127, 63), name="Orc",ai_cls=HostileEnemy,equipment=Equipment(), fighter=Fighter(hp=10, base_defence=0, base_power=3),inventory=Inventory(capacity=0),level=Level(xp_given=35),)
+troll = Actor(glyph="T", colour=(0, 127, 0), name="Troll",ai_cls=HostileEnemy,equipment=Equipment(), fighter=Fighter(hp=16, base_defence=1, base_power=4),inventory=Inventory(capacity=0),level=Level(xp_given=100),)
 
 health_potion = Item(
     glyph="!",
@@ -34,4 +35,20 @@ fireball_scroll = Item(
     colour=(255, 0, 0),
     name="Fireball Scroll",
     consumable=consumable.FireballDamageConsumable(damage=12, radius=3),
+)
+dagger = Item(
+    glyph="/", colour=(0, 191, 255), name="Dagger", equippable=equippable.Dagger()
+)
+
+sword = Item(glyph="/", colour=(0, 191, 255), name="Sword", equippable=equippable.Sword())
+
+leather_armor = Item(
+    glyph="[",
+    colour=(139, 69, 19),
+    name="Leather Armor",
+    equippable=equippable.LeatherArmor(),
+)
+
+chain_mail = Item(
+    glyph="[", colour=(139, 69, 19), name="Chain Mail", equippable=equippable.ChainMail()
 )
