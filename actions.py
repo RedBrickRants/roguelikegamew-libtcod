@@ -20,15 +20,16 @@ class Action:
     
     def perform(self) -> None:
         # First: try the action
-        self.execute()
-        print(f"entity: {self.entity.name} had {self.entity.action_points.ap} left")
+       
+        #print(f"entity: {self.entity.name} had {self.entity.action_points.ap} left")
         # Only spend AP if it succeeded
         if hasattr(self.entity, "action_points"):
             if not self.entity.action_points.spend(self.ap_cost):
                 raise exceptions.Impossible(
                     f"Not enough AP! Need {self.ap_cost}, have {self.entity.action_points.ap}"
                 )
-
+        self.execute()
+        
     def execute (self)-> None:
         raise NotImplementedError
     
@@ -134,11 +135,12 @@ class ActionWithADirection(Action):
         return NotImplementedError
     
 class BumpAction(ActionWithADirection):
+    ap_cost = 0 
     def execute(self)->None:
         if self.target_actor:
-            return MeleeAction(self.entity, self.dx, self.dy).execute()
+            return MeleeAction(self.entity, self.dx, self.dy).perform()
         else:
-            return MovementAction(self.entity, self.dx, self.dy).execute()
+            return MovementAction(self.entity, self.dx, self.dy).perform()
         
 class MeleeAction(ActionWithADirection):
     def execute(self)-> None:

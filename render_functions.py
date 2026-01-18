@@ -55,7 +55,14 @@ def render_ap_bar(
 ) -> None:
     x, y = location
     
-    # Simple text display
-    console.print(x=x, y=y, string=f"AP: {current_ap}/{maximum_ap}", fg=colour.bar_text)
+    # Visual bar like HP bar
+    bar_width = maximum_ap
+    filled = "█" * current_ap
+    empty = "░" * (maximum_ap - current_ap)
     
+    console.print(
+        x=x, y=y, 
+        string=f"AP:[{filled}{empty}] {current_ap}/{maximum_ap}", 
+        fg=colour.bar_text
+    )
     
