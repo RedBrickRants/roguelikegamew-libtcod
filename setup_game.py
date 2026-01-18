@@ -26,6 +26,7 @@ def new_game() -> Engine:
     room_min_size = const.ROOM_MIN_SIZE 
     max_rooms = const.MAX_ROOMS   
     
+    
     player = copy.deepcopy(entity_factories.player)
     engine = Engine(player= player)
     engine.game_world = GameWorld(
@@ -55,7 +56,10 @@ def new_game() -> Engine:
     player.inventory.items.append(leather_armor)
     player.equipment.toggle_equip(leather_armor, add_message=False)
 
-
+    print(f"Player AP bonuses: {engine.player.body.ap_bonuses}")
+    print(f"Player max AP: {engine.player.action_points.max_ap}")
+    print(f"Player body parts: {[p.name for p in engine.player.body.parts]}")
+    
     return engine
 
 def load_game(filename: str) -> Engine:

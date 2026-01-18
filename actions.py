@@ -143,6 +143,7 @@ class BumpAction(ActionWithADirection):
             return MovementAction(self.entity, self.dx, self.dy).perform()
         
 class MeleeAction(ActionWithADirection):
+    ap_cost = 2
     def execute(self)-> None:
         
         target = self.target_actor

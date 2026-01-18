@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from components.action_points import ActionPoints
     from components.inventory import Inventory
     from components.level import Level
+    from components.body import Body, BodyPart
     from game_map import GameMap
 
 T = TypeVar("T", bound="Entity")
@@ -88,6 +89,7 @@ class Actor(Entity):
             inventory: Inventory,
             level: Level,
             action_points: ActionPoints,
+            body: Body,
     ):
         super().__init__(
             x=x,
@@ -110,6 +112,8 @@ class Actor(Entity):
         self.level.parent = self
         self.action_points = action_points
         self.action_points.parent = self
+        self.body = body
+        self.body.parent = self
         
     @property
     def is_alive(self)->bool:

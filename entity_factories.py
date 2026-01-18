@@ -5,7 +5,9 @@ from components.fighter import Fighter
 from components.inventory import Inventory
 from components.level import Level
 from components.action_points import ActionPoints
+from components.body import Body
 from entity import Actor, Item
+import components.body_templates
 
 player = Actor(
     glyph="@", 
@@ -16,7 +18,8 @@ player = Actor(
     fighter=Fighter(hp=30, base_defence=2, base_power=5),
     inventory=Inventory(capacity=26),
     level=Level(level_up_base=200),
-    action_points=ActionPoints()
+    action_points=ActionPoints(),
+    body= Body(parts = components.body_templates.humanoid())
 )
 
 orc = Actor(
@@ -28,7 +31,8 @@ orc = Actor(
     fighter=Fighter(hp=10, base_defence=0, base_power=3),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=35),
-    action_points=ActionPoints(base_ap=3)
+    action_points=ActionPoints(base_ap=3),
+    body= Body(parts = components.body_templates.humanoid())
 )
 troll = Actor(
     glyph="T", 
@@ -39,7 +43,8 @@ troll = Actor(
     fighter=Fighter(hp=16, base_defence=1, base_power=4),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=100),
-    action_points=ActionPoints(base_ap=5)
+    action_points=ActionPoints(base_ap=5),
+    body= Body(parts = components.body_templates.humanoid())
 )
 
 health_potion = Item(

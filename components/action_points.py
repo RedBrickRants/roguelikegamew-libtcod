@@ -18,6 +18,7 @@ class ActionPoints(BaseComponent):
     @property
     def ap(self)-> int:
         return self._ap
+    
     @ap.setter
     def ap(self, value: int)-> None:
         self._ap = max(0, min(value, self.max_ap))
