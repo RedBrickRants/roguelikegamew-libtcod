@@ -120,7 +120,7 @@ class EventHandler(BaseEventHandler):
         if isinstance(action_or_state, BaseEventHandler):
             return action_or_state
         if self.handle_action(action_or_state):
-            # A valid action was performed.
+            # A valid action was executeed.
             if not self.engine.player.is_alive:
                 # The player was killed sometime during or after the action.
                 return GameOverEventHandler(self.engine)
@@ -145,9 +145,15 @@ class EventHandler(BaseEventHandler):
         except exceptions.Impossible as exc:
             self.engine.message_log.add_message(exc.args[0], colour.impossible)
             return False  # Skip enemy turn on exceptions.
+        
+        if self.engine.player.action_points.can_act():
+            # Player can keep acting
+            self.engine.update_fov()
+            return False  # Don't end turn yet
 
         self.engine.handle_enemy_turns()
-
+        for entity in set(self.engine.game_map.actors):
+            entity.action_points.refresh() 
         self.engine.update_fov()
         return True
 

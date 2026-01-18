@@ -29,10 +29,14 @@ class Engine:
      def handle_enemy_turns(self)-> None:
           for entity in set(self.game_map.actors)- {self.player}:
                if entity.ai:
-                    try:
-                         entity.ai.perform()
-                    except exceptions.Impossible:
-                         pass 
+                    while entity.action_points.can_act():
+                         try:
+                              action = entity.ai.execute()
+                              if action is None:
+                                   break
+                              action.perform()
+                         except exceptions.Impossible:
+                              break 
 
      def update_fov(self) -> None:
           self.game_map.visible[:] = compute_fov(
@@ -53,7 +57,9 @@ class Engine:
           render_functions.render_names_at_mouse_location(
             console=console, x=21, y=44, engine=self
           )
-
+          render_functions.render_ap_bar(
+               console=console, current_ap=self.player.action_points.ap, maximum_ap=self.player.action_points.max_ap, location=(1, 48)
+          )
      def save_as(self, filename: str)-> None:
           """Save this Engine instance as a compressed file."""
           save_data = lzma.compress(pickle.dumps(self))

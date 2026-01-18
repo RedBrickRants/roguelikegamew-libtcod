@@ -4,12 +4,43 @@ from components.equipment import Equipment
 from components.fighter import Fighter
 from components.inventory import Inventory
 from components.level import Level
+from components.action_points import ActionPoints
 from entity import Actor, Item
 
-player = Actor(glyph="@", colour=(255, 255, 255), name="Player",ai_cls=HostileEnemy,equipment=Equipment(),  fighter=Fighter(hp=30, base_defence=2, base_power=5),inventory=Inventory(capacity=26),level=Level(level_up_base=200),)
+player = Actor(
+    glyph="@", 
+    colour=(255, 255, 255), 
+    name="Player",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),  
+    fighter=Fighter(hp=30, base_defence=2, base_power=5),
+    inventory=Inventory(capacity=26),
+    level=Level(level_up_base=200),
+    action_points=ActionPoints()
+)
 
-orc = Actor(glyph="o", colour=(63, 127, 63), name="Orc",ai_cls=HostileEnemy,equipment=Equipment(), fighter=Fighter(hp=10, base_defence=0, base_power=3),inventory=Inventory(capacity=0),level=Level(xp_given=35),)
-troll = Actor(glyph="T", colour=(0, 127, 0), name="Troll",ai_cls=HostileEnemy,equipment=Equipment(), fighter=Fighter(hp=16, base_defence=1, base_power=4),inventory=Inventory(capacity=0),level=Level(xp_given=100),)
+orc = Actor(
+    glyph="o", 
+    colour=(63, 127, 63), 
+    name="Orc",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(), 
+    fighter=Fighter(hp=10, base_defence=0, base_power=3),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=35),
+    action_points=ActionPoints(base_ap=3)
+)
+troll = Actor(
+    glyph="T", 
+    colour=(0, 127, 0), 
+    name="Troll",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(), 
+    fighter=Fighter(hp=16, base_defence=1, base_power=4),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=100),
+    action_points=ActionPoints(base_ap=5)
+)
 
 health_potion = Item(
     glyph="!",

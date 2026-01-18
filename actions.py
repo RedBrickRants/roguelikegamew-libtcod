@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 
 class Action:
+    ap_cost = 1
     def __init__(self, entity:Actor)->None:
         super().__init__()
         self.entity = entity
@@ -17,7 +18,18 @@ class Action:
     def engine(self)-> Engine:
         return self.entity.gamemap.engine
     
-    def perform (self)-> None:
+    def perform(self) -> None:
+        # First: try the action
+        self.execute()
+        print(f"entity: {self.entity.name} had {self.entity.action_points.ap} left")
+        # Only spend AP if it succeeded
+        if hasattr(self.entity, "action_points"):
+            if not self.entity.action_points.spend(self.ap_cost):
+                raise exceptions.Impossible(
+                    f"Not enough AP! Need {self.ap_cost}, have {self.entity.action_points.ap}"
+                )
+
+    def execute (self)-> None:
         raise NotImplementedError
     
 class PickupAction(Action):
@@ -25,7 +37,7 @@ class PickupAction(Action):
     def __init__(self, entity:Actor):
         super().__init__(entity)
     
-    def perform(self)-> None:
+    def execute(self)-> None:
         actor_location_x =self.entity.x
         actor_location_y =self.entity.y
         inventory =self.entity.inventory
@@ -54,15 +66,15 @@ class ItemAction(Action):
     def target_actor(self)-> Optional[Actor]:
         return self.engine.game_map.get_actor_at_location(*self.target_xy)
     
-    def perform(self)-> None:
+    def execute(self)-> None:
         self.item.consumable.activate(self)
 
 class EscapeAction(Action):
-    def perform (self)-> None:
+    def execute (self)-> None:
         raise SystemExit()
     
 class DropItem(ItemAction):
-    def perform(self)-> None:
+    def execute(self)-> None:
         if self.entity.equipment.item_is_equipped(self.item):
             self.entity.equipment.toggle_equip(self.item)
 
@@ -72,17 +84,18 @@ class EquipAction(Action):
 
         self.item = item
 
-    def perform(self) -> None:
+    def execute(self) -> None:
         self.entity.equipment.toggle_equip(self.item)
 
         
 class WaitAction(Action):
-    def perform(self)-> None:
+    def execute(self)-> None:
         pass
 
 
 class TakeStairsAction(Action):
-    def perform(self) -> None:
+    
+    def execute(self) -> None:
         """
         Take the stairs, if any exist at the entity's location.
         """
@@ -117,18 +130,19 @@ class ActionWithADirection(Action):
     def target_actor(self)->Optional[Actor]:
         return self.engine.game_map.get_actor_at_location(*self.dest_xy)
 
-    def perform(self)-> None:
+    def execute(self)-> None:
         return NotImplementedError
     
 class BumpAction(ActionWithADirection):
-    def perform(self)->None:
+    def execute(self)->None:
         if self.target_actor:
-            return MeleeAction(self.entity, self.dx, self.dy).perform()
+            return MeleeAction(self.entity, self.dx, self.dy).execute()
         else:
-            return MovementAction(self.entity, self.dx, self.dy).perform()
+            return MovementAction(self.entity, self.dx, self.dy).execute()
         
 class MeleeAction(ActionWithADirection):
-    def perform(self)-> None:
+    def execute(self)-> None:
+        
         target = self.target_actor
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
@@ -146,7 +160,8 @@ class MeleeAction(ActionWithADirection):
             self.engine.message_log.add_message(f"{attack_description} but does no damage", attac_colour)
 
 class MovementAction(ActionWithADirection):
-    def perform (self)-> None:
+
+    def execute (self)-> None:
         dest_x, dest_y = self.dest_xy
         if not self.engine.game_map.in_bounds(dest_x, dest_y):
             raise exceptions.Impossible("That way is blocked.")
@@ -155,3 +170,4 @@ class MovementAction(ActionWithADirection):
         if self.engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
             raise exceptions.Impossible("That way is blocked.")
         self.entity.move(self.dx, self.dy)
+

@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from components.equipment import Equipment
     from components.equippable import Equippable
     from components.fighter import Fighter
+    from components.action_points import ActionPoints
     from components.inventory import Inventory
     from components.level import Level
     from game_map import GameMap
@@ -86,6 +87,7 @@ class Actor(Entity):
             fighter: Fighter,
             inventory: Inventory,
             level: Level,
+            action_points: ActionPoints,
     ):
         super().__init__(
             x=x,
@@ -106,6 +108,8 @@ class Actor(Entity):
         self.inventory.parent = self
         self.level = level
         self.level.parent = self
+        self.action_points = action_points
+        self.action_points.parent = self
         
     @property
     def is_alive(self)->bool:
