@@ -53,22 +53,6 @@ class GameMap:
     #Inbounds returns true if the x and y are out of the map bounds
     def in_bounds(self, x:  int, y: int)->bool:
         return 0 <=x <self.width and 0 <= y< self.height
-    
-    def render(self, console: Console)->None:
-        #Using the Console class’s tiles_rgb method, we can quickly render the entire map
-        console.rgb[0:self.width, 0:self.height] = np.select( 
-            condlist=[self.visible, self.explored], 
-            choicelist=[self.tiles["light"], 
-            self.tiles["dark"]], 
-            default=tile_types.SHROUD )
-        
-        entities_sorted_for_rendering = sorted(
-            self.entities, key=lambda x: x.render_order.value
-        )
-
-        for entity in entities_sorted_for_rendering:
-              if self.visible[entity.x, entity.y]:
-                console.print(entity.x, entity.y, entity.glyph, fg=entity.colour)
 
 
 class GameWorld:

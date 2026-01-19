@@ -34,6 +34,7 @@ class Action:
         raise NotImplementedError
     
 class PickupAction(Action):
+    ap_cost = 0
     """Pickup an item and add it to the inventory, if there is room for it."""
     def __init__(self, entity:Actor):
         super().__init__(entity)
@@ -71,15 +72,18 @@ class ItemAction(Action):
         self.item.consumable.activate(self)
 
 class EscapeAction(Action):
+    ap_cost = 0
     def execute (self)-> None:
         raise SystemExit()
     
 class DropItem(ItemAction):
+    ap_cost = 0
     def execute(self)-> None:
         if self.entity.equipment.item_is_equipped(self.item):
             self.entity.equipment.toggle_equip(self.item)
 
 class EquipAction(Action):
+    ap_cost = 0
     def __init__(self, entity: Actor, item: Item):
         super().__init__(entity)
 
@@ -95,7 +99,7 @@ class WaitAction(Action):
 
 
 class TakeStairsAction(Action):
-    
+    ap_cost = 0
     def execute(self) -> None:
         """
         Take the stairs, if any exist at the entity's location.

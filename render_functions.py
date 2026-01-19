@@ -1,6 +1,9 @@
 from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
+import constants as const 
+import numpy as np #type: ignore
 import colour
+import tile_types
 
 if TYPE_CHECKING:
     from tcod  import console
@@ -36,8 +39,6 @@ def render_station_level(
 
     console.print(x=x, y=y, string=f"station level: {station_level}")
 
-
-
 def render_names_at_mouse_location(
         console: console.Console, x: int, y: int, engine: Engine
 )-> None:
@@ -66,3 +67,31 @@ def render_ap_bar(
         fg=colour.bar_text
     )
     
+
+def render_map(console: console.Console, game_map:GameMap)-> None:
+    #Using the Console class’s tiles_rgb method, we can quickly render the entire map
+    console.rgb[0:game_map.width, 0:game_map.height] = np.select( 
+        condlist=[game_map.visible, game_map.explored], 
+        choicelist=[game_map.tiles["light"], 
+        game_map.tiles["dark"]], 
+        default=tile_types.SHROUD )
+
+
+def render_entities(console: console.Console, game_map: GameMap) -> None:
+    entities_sorted_for_rendering = sorted(
+            game_map.entities, key=lambda x: x.render_order.value
+        )
+    for entity in entities_sorted_for_rendering:
+            if game_map.visible[entity.x, entity.y]:
+                console.print(entity.x, entity.y, entity.glyph, fg=entity.colour)
+
+def render_stats():
+    pass
+
+def render_log ():
+    pass
+
+def render_death_screen(console):
+    console.clear()
+    console.print(const.MAP_VIEW_WIDTH // 2 - 5, const.MAP_VIEW_HEIGHT // 2, "YOU DIED", fg=(255, 0, 0))
+    console.print(const.MAP_VIEW_WIDTH // 2 - 10, const.MAP_VIEW_HEIGHT // 2 + 2, "Press 'q' to quit", fg=(255, 255, 255))
