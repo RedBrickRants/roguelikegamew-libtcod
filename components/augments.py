@@ -7,9 +7,10 @@ from components.body import Body, BodyPart
 class Modification:
     parent: BodyPart
     
-    def __init__(self, name: str, description: str):
+    def __init__(self, name: str, description: str, mod_type: str = "<Unnamed>"):
         self.name = name
         self.description = description
+        self.mod_type = mod_type
         self.parent = None
     
     def get_stat_bonuses(self) -> dict:
@@ -77,6 +78,11 @@ class MegaMash(Modification):
 class DermaMAX(Modification):
     #INTERNAL TORSO
     #Give extra defence to player
+    pass
+
+class FutureRocketScientist(Modification):
+    #INTRINSIC
+    #Makes player character "Darker", reduces ap to 2 but greatly increases attack and defence
     pass
 
         
