@@ -1,30 +1,12 @@
 #constants.py
  
-
-#Screen Dimensions
-SCREEN_WIDTH = 80
-SCREEN_HEIGHT = 50
-
-MAP_VIEW_WIDTH = 0
-MAP_VIEW_HEIGHT = 0
-
-MAP_WIDTH = 80
-MAP_HEIGHT = 43
-
-ROOM_MAX_SIZE = 10
-ROOM_MIN_SIZE = 6
-MAX_ROOMS = 30
-
-MAX_MONSTERS_PER_ROOM = 2
-MAX_ITEMS_PER_ROOM = 2#constants.py
- 
 # Screen Dimensions
 SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 50
 
 # Map viewport (visible portion on screen)
-MAP_VIEW_WIDTH = 60
-MAP_VIEW_HEIGHT = 43
+CAMERA_WIDTH = SCREEN_WIDTH
+CAMERA_HEIGHT = SCREEN_HEIGHT
 
 # Actual map size (can be much larger when you add camera)
 MAP_WIDTH = 80  # Will increase to 200+ later
