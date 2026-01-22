@@ -25,7 +25,7 @@ class ActionPoints(BaseComponent):
 
     @property
     def max_ap(self) -> int:
-        """Total AP including bonuses from body/augments"""
+        """Total AP including bonuses from body/body_modifications"""
         return self._base_ap + self.ap_bonuses
     
     @property
