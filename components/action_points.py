@@ -25,14 +25,17 @@ class ActionPoints(BaseComponent):
 
     @property
     def max_ap(self) -> int:
-        """Total AP including bonuses from body/modifications"""
+        """Total AP including bonuses from body/augments"""
         return self._base_ap + self.ap_bonuses
     
     @property
     def ap_bonuses(self) -> int:
-        """Get AP bonuses from body parts/modifications"""
+        """Ask the body for the aggregated AP bonus"""
+        # Check if the parent (Actor) has a body component
         if hasattr(self.parent, 'body') and self.parent.body:
-            return self.parent.body.ap_bonuses
+            # Get the dictionary of all bonuses (power, defense, max_ap, etc.)
+            bonuses = self.parent.body.stat_bonuses
+            return bonuses.get("max_ap", 0) # Look specifically for max_ap
         return 0
     
     def restore(self, amount: int)-> int:

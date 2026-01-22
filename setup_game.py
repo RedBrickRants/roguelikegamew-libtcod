@@ -57,7 +57,7 @@ def new_game() -> Engine:
     player.equipment.toggle_equip(leather_armor, add_message=False)
 
     print(f"Player Stat bonuses: {engine.player.body.stat_bonuses}")
-    print(f"Player AP bonuses: {engine.player.body.ap_bonuses}")
+    print(f"Player AP bonuses: {engine.player.action_points.ap_bonuses}")
     print(f"Player max AP: {engine.player.action_points.max_ap}")
     print(f"Player body parts: {[p.name for p in engine.player.body.parts]}")
     

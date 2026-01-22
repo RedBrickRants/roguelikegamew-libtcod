@@ -7,16 +7,21 @@ from components.body import Body, BodyPart
 class Modification:
     parent: BodyPart
     
-    def __init__(self, name: str, description: str, mod_type: str = "<Unnamed>"):
+    def __init__(self, name: str, description: str, mod_type: str ):
         self.name = name
         self.description = description
         self.mod_type = mod_type
         self.parent = None
     
+    @property
+    def get_mod_location(self) -> str:
+        return self.mod_type
+
     def get_stat_bonuses(self) -> dict:
         """Override in subclasses to give stat bonuses"""
         return {}
-    
+
+
     def on_hit(self, attacker, target):
         """Called when equipped actor hits something"""
         pass
@@ -41,7 +46,13 @@ class ExtraBrain(Modification):
     #INTERNAL
     #Develop an advanced Growth on the left side of your brain:
     #Gives player an additional Action Point
-    pass
+    def __init__(self):
+        super().__init__("Xtra Brain", 
+                         "Develop an advanced Growth on the left side of your brain",
+                        "internal"
+                         )
+    def get_stat_bonuses(self): 
+        return {"max_ap": 1}
 
 class TheTism(Modification):
     #INTRINSIC? its on the rocks
@@ -70,19 +81,35 @@ class ExtraChromie(Modification):
     #gives an additional intrinsic/ modification slot on any extremity
     pass
 
-class MegaMash(Modification):
+class BigArm(Modification):
     #ARM EXTERNAL
     #gives extra strength
-    pass
-
+    def __init__(self):
+        super().__init__(
+            "Mega[RM]", 
+            "Mega Removable Appendage, Increase size and density of a user's Upper extremity", 
+            "internal")
+    def get_stat_bonus():
+        return{"strength": 3}
+        
 class DermaMAX(Modification):
     #INTERNAL TORSO
     #Give extra defence to player
     pass
 
-class FutureRocketScientist(Modification):
+class NumbDown(Modification):
     #INTRINSIC
-    #Makes player character "Darker", reduces ap to 2 but greatly increases attack and defence
-    pass
+    #Makes player character "dumber, reduces ap to 2 but greatly increases attack and defence
+    def __init__(self):
+        super().__init__(
+            "Induced RPD",
+            "Extreme Dosage off an in development Multi purpose painkiller caused induced encephalopathy",
+            "intrinsic"
+        )
+
+            
+    def get_stat_bonuses(self):
+    # Sets AP to 2 (assuming base is 4)
+        return {"max_ap": -2, "power": 4, "defence": 4}
 
         

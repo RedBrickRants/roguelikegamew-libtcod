@@ -23,23 +23,29 @@ class Body():
         for part in self.parts:
             part.parent = self
     
-    @property
-    def ap_bonuses(self) -> int:
-        total = 0
-        for part in self.parts:
-            if part.modification:
-                total += part.modification.ap_bonus
-        return total
+
+    # In components/body.py
     @property
     def stat_bonuses(self) -> dict:
         """Aggregate all stat bonuses from all body parts"""
         bonuses = {}
         
+        # Check body parts
         for part in self.parts:
-            if part.modification:  # Check if modification exists
-                part_bonuses = part.modification.get_stat_bonuses()
+            if part.internal_modification:
+                part_bonuses = part.internal_modification.get_stat_bonuses()
+                for stat, value in part_bonuses.items():
+                    bonuses[stat] = bonuses.get(stat, 0) + value
+            
+            if part.external_modification:
+                part_bonuses = part.external_modification.get_stat_bonuses()
                 for stat, value in part_bonuses.items():
                     bonuses[stat] = bonuses.get(stat, 0) + value
         
-        return bonuses
+        # Check intrinsic mod
+        if self.intrinsic_modification:
+            intrinsic_bonuses = self.intrinsic_modification.get_stat_bonuses()
+            for stat, value in intrinsic_bonuses.items():
+                bonuses[stat] = bonuses.get(stat, 0) + value
         
+        return bonuses

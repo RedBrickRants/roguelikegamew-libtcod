@@ -241,7 +241,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
 
         console.print(
-            x=x + 1, y=y + 4, string=f"Attack: {self.engine.player.fighter.power}"
+            x=x + 1, y=y + 4, string=f"Attack: {self.engine.player.fighter.strength}"
         )
         console.print(
             x=x + 1, y=y + 5, string=f"defence: {self.engine.player.fighter.defence}"
@@ -280,7 +280,7 @@ class LevelUpEventHandler(AskUserEventHandler):
         console.print(
             x=x + 1,
             y=5,
-            string=f"b) Strength (+1 attack, from {self.engine.player.fighter.power})",
+            string=f"b) Strength (+1 attack, from {self.engine.player.fighter.strength})",
         )
         console.print(
             x=x + 1,
@@ -297,7 +297,7 @@ class LevelUpEventHandler(AskUserEventHandler):
             if index == 0:
                 player.level.increase_max_hp()
             elif index == 1:
-                player.level.increase_power()
+                player.level.increase_strength()
             else:
                 player.level.increase_defence()
         else:

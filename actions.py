@@ -151,7 +151,7 @@ class MeleeAction(ActionWithADirection):
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
         
-        damage = self.entity.fighter.power - target.fighter.defence
+        damage = self.entity.fighter.strength - target.fighter.defence
         attack_description = f"{self.entity.name.capitalize()} attacks {target.name}"
         if self.entity is self.engine.player:
             attac_colour = colour.player_atk
