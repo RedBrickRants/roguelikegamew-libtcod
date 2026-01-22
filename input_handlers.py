@@ -144,9 +144,17 @@ class EventHandler(BaseEventHandler):
             action.perform()
         except exceptions.Impossible as exc:
             self.engine.message_log.add_message(exc.args[0], colour.impossible)
+
+            if not self.engine.player.action_points.can_act():
+                self.engine.handle_enemy_turns()
+                for entity in set(self.engine.game_map.actors):
+                    entity.action_points.refresh()
+                self.engine.update_fov()
+                return True
+
             return False  # Skip enemy turn on exceptions.
         
-        if self.engine.player.action_points.can_act():
+        if self.engine.player.action_points.can_act() :
             # Player can keep acting
             self.engine.update_fov()
             return False  # Don't end turn yet

@@ -19,10 +19,7 @@ class Action:
         return self.entity.gamemap.engine
     
     def perform(self) -> None:
-        # First: try the action
-       
-        #print(f"entity: {self.entity.name} had {self.entity.action_points.ap} left")
-        # Only spend AP if it succeeded
+
         if hasattr(self.entity, "action_points"):
             if not self.entity.action_points.spend(self.ap_cost):
                 raise exceptions.Impossible(

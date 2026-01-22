@@ -63,7 +63,7 @@ def render_ap_bar(
     
     console.print(
         x=x, y=y, 
-        string=f"AP:[{filled}{empty}] {current_ap}/{maximum_ap}", 
+        string=f"AP:[{empty}{filled}] {current_ap}/{maximum_ap}", 
         fg=colour.bar_text
     )
     

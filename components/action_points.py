@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
-    from entity import Actor, Item
+    from entity import Actor
 
 
 class ActionPoints(BaseComponent):
@@ -25,12 +25,12 @@ class ActionPoints(BaseComponent):
 
     @property
     def max_ap(self) -> int:
-        """Total AP including bonuses from body/augments"""
+        """Total AP including bonuses from body/modifications"""
         return self._base_ap + self.ap_bonuses
     
     @property
     def ap_bonuses(self) -> int:
-        """Get AP bonuses from body parts/augments"""
+        """Get AP bonuses from body parts/modifications"""
         if hasattr(self.parent, 'body') and self.parent.body:
             return self.parent.body.ap_bonuses
         return 0
