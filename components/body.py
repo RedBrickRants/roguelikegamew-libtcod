@@ -10,7 +10,8 @@ class BodyPart:
     def __init__(self, name: str, part_type):
         self.name = name
         self.part_type = part_type
-        self.modification = None
+        self.internal_modification = None
+        self.external_modification = None
         self.parent = None
 
 
@@ -18,6 +19,7 @@ class Body():
     parent: Actor
     def __init__(self, parts: List[BodyPart]):
         self.parts = parts
+        self.intrinsic_modification = None
         for part in self.parts:
             part.parent = self
     

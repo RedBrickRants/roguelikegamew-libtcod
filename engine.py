@@ -37,6 +37,7 @@ class Engine:
                               action.perform()
                          except exceptions.Impossible:
                               break 
+          
 
      def update_fov(self) -> None:
           self.game_map.visible[:] = compute_fov(
@@ -61,6 +62,7 @@ class Engine:
           render_functions.render_ap_bar(
                console=console, current_ap=self.player.action_points.ap, maximum_ap=self.player.action_points.max_ap, location=(1, 48)
           )
+          
      def save_as(self, filename: str)-> None:
           """Save this Engine instance as a compressed file."""
           save_data = lzma.compress(pickle.dumps(self))
