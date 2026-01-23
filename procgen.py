@@ -127,7 +127,8 @@ def place_entities(room: RectRoom, station: GameMap, floor_number: int,) -> None
         y = random.randint(room.y1 +1, room.y2 -1)
         if not any(entity.x ==x and entity.y == y for entity in station.entities):
             entity.spawn(station, x, y)
-
+def tunnel_to(start, end)-> Iterator[Tuple[int, int]]:
+    pass
 #create L shaped tunels between these two points
 def tunnels_between(start: Tuple[int, int], end: Tuple[int, int]) -> Iterator[Tuple[int, int]]:
     x1, y1 = start
