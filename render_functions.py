@@ -85,13 +85,66 @@ def render_entities(console: console.Console, game_map: GameMap) -> None:
             if game_map.visible[entity.x, entity.y]:
                 console.print(entity.x, entity.y, entity.glyph, fg=entity.colour)
 
-def render_stats():
-    pass
+def render_stats_panel(console, actor, x, y, width, height):
+    """Render actor stats with HP and AP bars"""
+    console.draw_frame(x, y, width, height, title=actor.name[:15], fg=colour.white, bg=colour.black, clear=True)
+    
+    cy = y + 1
+    
+    # HP bar
+    hp_width = width - 4
+    hp_filled = int((actor.fighter.hp / actor.fighter.max_hp) * hp_width)
+    console.print(x + 2, cy, "HP:", fg=colour.white)
+    cy += 1
+    console.draw_rect(x + 2, cy, hp_width, 1, ch=1, bg=colour.bar_empty)
+    if hp_filled > 0:
+        console.draw_rect(x + 2, cy, hp_filled, 1, ch=1, bg=colour.bar_filled)
+    console.print(x + 2, cy, f"{actor.fighter.hp}/{actor.fighter.max_hp}", fg=colour.bar_text)
+    cy += 2
+    
+    # AP bar
+    if hasattr(actor, 'action_points'):
+        ap_width = width - 4
+        ap_filled = int((actor.action_points.ap / actor.action_points.max_ap) * ap_width)
+        console.print(x + 2, cy, "AP:", fg=colour.white)
+        cy += 1
+        filled = "o" * actor.action_points.ap
+        empty = "." * (actor.action_points.max_ap - actor.action_points.ap)
+        console.print(x + 2, cy, f"{filled}{empty}", fg=colour.white)
+        cy += 2
+    
+    # Stats
+    console.print(x + 2, cy, f"ATK: {actor.fighter.strength}", fg=colour.white)
+    cy += 1
+    console.print(x + 2, cy, f"DEF: {actor.fighter.defence}", fg=colour.white)
+    cy += 1
+    console.print(x + 2, cy, f"LVL: {actor.level.current_level}", fg=colour.white)
 
-def render_log ():
-    pass
 
-def render_death_screen(console):
-    console.clear()
-    console.print(const.MAP_VIEW_WIDTH // 2 - 5, const.MAP_VIEW_HEIGHT // 2, "YOU DIED", fg=(255, 0, 0))
-    console.print(const.MAP_VIEW_WIDTH // 2 - 10, const.MAP_VIEW_HEIGHT // 2 + 2, "Press 'q' to quit", fg=(255, 255, 255))
+def render_inventory_panel(console, actor, x, y, width, height):
+    """Render inventory"""
+    console.draw_frame(x, y, width, height, title="Inventory", fg=colour.white, bg=colour.black, clear=True)
+    
+    cy = y + 1
+    if not actor.inventory.items:
+        console.print(x + 2, cy, "[Empty]", fg=colour.impossible)
+        return
+    
+    max_items = height - 2
+    for i, item in enumerate(actor.inventory.items[:max_items]):
+        equipped = " (E)" if actor.equipment.item_is_equipped(item) else ""
+        text = f"{item.name[:12]}{equipped}"
+        console.print(x + 2, cy, text, fg=colour.white)
+        cy += 1
+
+
+def render_names_at_mouse(console, x, y, engine):
+    """Show entity name at mouse with frame"""
+    mx, my = engine.mouse_location
+    if not engine.game_map.in_bounds(mx, my) or not engine.game_map.visible[mx, my]:
+        return
+    
+    names = [e.name for e in engine.game_map.entities if e.x == mx and e.y == my]
+    if names:
+        text = ", ".join(names)
+        console.print(x, y, text[:60], fg=colour.white)

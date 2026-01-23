@@ -41,6 +41,20 @@ SHROUD = np.array((ord (" "), (255,255,255),(0,0,0)), dtype=graphic_data)
 floor = new_tile( walkable= True, transparent= True, dark=(ord("."), (141, 94, 183), (0, 0, 0)), light=(ord("."),(255, 255, 255),(0,0,0)))
 wall = new_tile( walkable= False, transparent= False, dark=(ord("░"), (141, 94, 183), (0, 0, 0)), light=(ord("#"),(255, 255, 255),(0,0,0)))
 
+door_closed = new_tile(
+    walkable=False,  # Can't walk through closed door
+    transparent=False,  # Can't see through
+    dark=(ord('+'), (139, 69, 19), (0, 0, 0)),
+    light=(ord('+'), (139, 69, 19), (0, 0, 0))
+)
+
+door_open = new_tile(
+    walkable=True,
+    transparent=True,
+    dark=(ord('-'), (139, 69, 19), (0, 0, 0)),
+    light=(ord('-'), (139, 69, 19), (0, 0, 0))
+)
+
 down_stairs = new_tile(
     walkable=True,
     transparent=True,

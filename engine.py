@@ -46,23 +46,29 @@ class Engine:
           self.game_map.explored |= self.game_map.visible
           
      def render(self, console: Console) -> None:
-          #print(f"this is: {self.game_map.render(console)}")
+          console.clear()
+          
+          # Map and entities (now takes up more space)
           render_functions.render_map(console, self.game_map)
           render_functions.render_entities(console, self.game_map)
-          self.message_log.render(console=console, x=21, y=45, width=40, height=5)
-          render_functions.render_bar(console=console, current_value=self.player.fighter.hp, maximum_value= self.player.fighter.max_hp, total_width=20)
-          render_functions.render_station_level(
-            console=console,
-            station_level=self.game_world.current_floor,
-            location=(0, 47),
-          )
-          render_functions.render_names_at_mouse_location(
-            console=console, x=21, y=44, engine=self
-          )
-          render_functions.render_ap_bar(
-               console=console, current_ap=self.player.action_points.ap, maximum_ap=self.player.action_points.max_ap, location=(1, 48)
+          
+          # Stats panel - MOVE IT RIGHT
+          render_functions.render_stats_panel(
+               console, self.player,
+               121, 0, 19, 21  # Was 61, now 121 (after the 120-wide map)
           )
           
+          # Inventory panel
+          render_functions.render_inventory_panel(
+               console, self.player,
+               121, 22, 19, 21  # Was 61, now 121
+          )
+          
+          # Log - MOVE IT DOWN
+          self.message_log.render(console, 0, 61, 120, 6)  # Was y=44, now 61
+          
+          # Mouse hover - MOVE IT DOWN
+          render_functions.render_names_at_mouse(console, 0, 60, self)  # Was 43, now 60
      def save_as(self, filename: str)-> None:
           """Save this Engine instance as a compressed file."""
           save_data = lzma.compress(pickle.dumps(self))
