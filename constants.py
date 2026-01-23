@@ -10,7 +10,7 @@ CAMERA_HEIGHT = SCREEN_HEIGHT
 
 # Actual map size (can be much larger when you add camera)
 MAP_WIDTH = 100  # Will increase to 200+ later
-MAP_HEIGHT = 50  # Will increase to 100+ later
+MAP_HEIGHT = 60  # Will increase to 100+ later
 
 # UI Panel dimensions
 STATS_PANEL_X = 61
@@ -29,8 +29,8 @@ LOG_PANEL_WIDTH = 80
 LOG_PANEL_HEIGHT = 6
 
 # Dungeon generation
-ROOM_MAX_SIZE = 10
-ROOM_MIN_SIZE = 6
+ROOM_MAX_SIZE = 15
+ROOM_MIN_SIZE = 5
 MAX_ROOMS = 50
 
 MAX_MONSTERS_PER_ROOM = 2

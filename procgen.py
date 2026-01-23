@@ -104,6 +104,8 @@ class RectRoom:
                and self.y2 >=other.y1
                )
     
+
+
 def place_entities(room: RectRoom, station: GameMap, floor_number: int,) -> None:
     number_of_monsters = random.randint(
         0, get_max_value_for_floor(max_monsters_by_floor, floor_number)
@@ -143,37 +145,66 @@ def tunnels_between(start: Tuple[int, int], end: Tuple[int, int]) -> Iterator[Tu
 def generate_station(max_rooms: int, room_min_size: int, room_max_size: int, map_width, map_height, engine: Engine)-> GameMap:
     player = engine.player
     station = GameMap(engine, map_width, map_height, entites=[player])
-    rooms: List[RectRoom] = []
+     
+    rooms: List[List[RectRoom]] = []
+    half_width = map_width //2
+    half_height = map_height //2
+
+    quadrants = {
+        1:(0,0, half_width, half_height), 
+        2:(half_width, 0, half_width, half_height), 
+        3:(0, half_height, half_width,half_height),
+        4:(half_width,half_height, half_width,half_height)
+    }
+
     center_of_last_room = (0, 0)
     center_of_first_room = (0,0)
 
-    for room in range(max_rooms):
+    rooms_by_quadrant = {key: [] for key in quadrants}
+    for _ in range(max_rooms):
+
+
         room_width = random.randint(room_min_size, room_max_size)
         room_height = random.randint(room_min_size, room_max_size)
 
-        x = random.randint(0, station.width - room_width -1)
-        y = random.randint(0, station.height - room_height - 1)
-        new_room = RectRoom(x, y, room_width, room_height)
+        for q_key in quadrants:
+            
+            quad_x, quad_y, quad_w, quad_h = quadrants[q_key]
+            x = random.randint(quad_x,quad_x+ quad_w- room_width - 1)
+            y = random.randint(quad_y, quad_y+ quad_h - room_height - 1)
+            new_room = RectRoom(x, y, room_width, room_height)
+            
+            if any(new_room.intersect(other_room)for other_room in rooms_by_quadrant[q_key]):
+                continue
+            
+            current_quadrants_rooms = rooms_by_quadrant[q_key]
+            
+            station.tiles[new_room.area] = tile_types.floor
 
-        if any(new_room.intersect(other_room)for other_room in rooms):
-            continue
-        station.tiles[new_room.area] = tile_types.floor
+            if len(rooms) == 0:
+                center_of_first_room = (new_room.center)
+                player.place(*new_room.center, station)
+        
 
-        if len(rooms) == 0:
-            center_of_first_room = (new_room.center)
-            player.place(*new_room.center, station)
-        else:
-            for x, y in tunnels_between(rooms[-1].center, new_room.center):
-                station.tiles[x, y] = tile_types.floor
+            if len(current_quadrants_rooms) > 0:
+                previous_room = current_quadrants_rooms[-1]
+                for x, y in tunnels_between(previous_room.center, new_room.center):
+                    station.tiles[x, y] = tile_types.floor
+
+            if len(current_quadrants_rooms) == 0 and len(rooms) >0:
+                bridge_room = rooms[-1]
+                for x, y in tunnels_between (bridge_room.center, new_room.center):
+                    station.tiles[x,y] = tile_types.floor
+
             center_of_last_room = new_room.center
-        place_entities(new_room, station, engine.game_world.current_floor)
+            current_quadrants_rooms.append(new_room)
 
-        station.tiles[center_of_first_room] = tile_types.up_stairs
-        station.upstairs_location = center_of_first_room
+            place_entities(new_room, station, engine.game_world.current_floor)
+            rooms.append(new_room)
+    station.tiles[center_of_first_room] = tile_types.up_stairs
+    station.upstairs_location = center_of_first_room
 
-        station.tiles[center_of_last_room] = tile_types.down_stairs
-        station.downstairs_location = center_of_last_room
-
-        rooms.append(new_room)
+    station.tiles[center_of_last_room] = tile_types.down_stairs
+    station.downstairs_location = center_of_last_room
 
     return station
