@@ -128,6 +128,9 @@ def place_entities(room: RectRoom, station: GameMap, floor_number: int,) -> None
         if not any(entity.x ==x and entity.y == y for entity in station.entities):
             entity.spawn(station, x, y)
 
+def smart_tunnels():
+    pass
+
 #create L shaped tunels between these two points
 def tunnels_between(start: Tuple[int, int], end: Tuple[int, int]) -> Iterator[Tuple[int, int]]:
     x1, y1 = start
@@ -149,25 +152,25 @@ def generate_station(max_rooms: int, room_min_size: int, room_max_size: int, map
     rooms: List[List[RectRoom]] = []
     half_width = map_width //2
     half_height = map_height //2
-
     quadrants = {
         1:(0,0, half_width, half_height), 
         2:(half_width, 0, half_width, half_height), 
-        3:(0, half_height, half_width,half_height),
-        4:(half_width,half_height, half_width,half_height)
+        3:(half_width,half_height, half_width,half_height),
+        4:(0, half_height, half_width,half_height)
     }
 
     center_of_last_room = (0, 0)
     center_of_first_room = (0,0)
 
-    rooms_by_quadrant = {key: [] for key in quadrants}
-    for _ in range(max_rooms):
+    rooms_per_quadrant = max_rooms // 4 
+    rooms_by_quadrant = {key: [] for key in quadrants} 
+
+    for q_key in quadrants:
+        for _ in range(rooms_per_quadrant):
 
 
-        room_width = random.randint(room_min_size, room_max_size)
-        room_height = random.randint(room_min_size, room_max_size)
-
-        for q_key in quadrants:
+            room_width = random.randint(room_min_size, room_max_size)
+            room_height = random.randint(room_min_size, room_max_size)
             
             quad_x, quad_y, quad_w, quad_h = quadrants[q_key]
             x = random.randint(quad_x,quad_x+ quad_w- room_width - 1)
@@ -187,20 +190,23 @@ def generate_station(max_rooms: int, room_min_size: int, room_max_size: int, map
         
 
             if len(current_quadrants_rooms) > 0:
-                previous_room = current_quadrants_rooms[-1]
-                for x, y in tunnels_between(previous_room.center, new_room.center):
-                    station.tiles[x, y] = tile_types.floor
+                nearest_room = min(current_quadrants_rooms, key= lambda room:(room.center[0] - new_room.center[0]) ** 2 + (room.center[1] - new_room.center[1]) ** 2)
+                for x, y in tunnels_between(nearest_room.center, new_room.center):
+                    if station.tiles[x, y] != tile_types.floor:
+                        station.tiles[x, y] = tile_types.floor
 
             if len(current_quadrants_rooms) == 0 and len(rooms) >0:
-                bridge_room = rooms[-1]
+                bridge_room = min(rooms, key= lambda room:(room.center[0] - new_room.center[0]) ** 2 + (room.center[1] - new_room.center[1]) ** 2)
                 for x, y in tunnels_between (bridge_room.center, new_room.center):
-                    station.tiles[x,y] = tile_types.floor
+                    if station.tiles[x, y] != tile_types.floor:
+                        station.tiles[x, y] = tile_types.floor
 
-            center_of_last_room = new_room.center
+            
             current_quadrants_rooms.append(new_room)
 
             place_entities(new_room, station, engine.game_world.current_floor)
             rooms.append(new_room)
+            center_of_last_room = new_room.center
     station.tiles[center_of_first_room] = tile_types.up_stairs
     station.upstairs_location = center_of_first_room
 
