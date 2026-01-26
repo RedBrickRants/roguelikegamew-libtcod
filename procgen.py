@@ -152,8 +152,8 @@ def generate_station(max_rooms: int, room_min_size: int, room_max_size: int, map
     quadrants = {
         1:(0,0, half_width, half_height), 
         2:(half_width, 0, half_width, half_height), 
-        3:(half_width,half_height, half_width,half_height),
-        4:(0, half_height, half_width,half_height)
+        3:(0, half_height, half_width,half_height),
+        4:(half_width,half_height, half_width,half_height),
     }
 
     center_of_last_room = (0, 0)
@@ -192,11 +192,26 @@ def generate_station(max_rooms: int, room_min_size: int, room_max_size: int, map
                     if station.tiles[x, y] != tile_types.floor:
                         station.tiles[x, y] = tile_types.floor
 
-            if len(current_quadrants_rooms) == 0 and len(rooms) >0:
-                bridge_room = min(rooms, key= lambda room:(room.center[0] - new_room.center[0]) ** 2 + (room.center[1] - new_room.center[1]) ** 2)
-                for x, y in tunnels_between (bridge_room.center, new_room.center):
-                    if station.tiles[x, y] != tile_types.floor:
-                        station.tiles[x, y] = tile_types.floor
+            if len(current_quadrants_rooms) == 0 and len(rooms) > 0:
+                match q_key:
+                    case 2:
+                        target_quadrant = 1
+                    case 3:
+                        target_quadrant = 1
+                    case 4:
+                        target_quadrant = 2
+                    case _:
+                        target_quadrant = None
+                
+                if target_quadrant and rooms_by_quadrant[target_quadrant]:
+                    bridge_room = min(
+                        rooms_by_quadrant[target_quadrant],
+                        key=lambda room: (room.center[0] - new_room.center[0]) ** 2 + 
+                                    (room.center[1] - new_room.center[1]) ** 2
+                    )
+                    for x, y in tunnels_between(bridge_room.center, new_room.center):
+                        if station.tiles[x, y] != tile_types.floor:
+                            station.tiles[x, y] = tile_types.floor
 
             
             current_quadrants_rooms.append(new_room)
