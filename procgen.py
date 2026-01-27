@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Dict, Iterator, List, Tuple, TYPE_CHECKING
 import entity_factories
+from entity import Actor
 from game_map import GameMap
 import tile_types
 import tcod
@@ -126,8 +127,9 @@ def place_entities(room: RectRoom, station: GameMap, floor_number: int,) -> None
         x = random.randint(room.x1 +1, room.x2-1)
         y = random.randint(room.y1 +1, room.y2 -1)
         if not any(entity.x ==x and entity.y == y for entity in station.entities):
-            entity.spawn(station, x, y)
-
+            spawned = entity.spawn(station, x, y)
+            if isinstance(spawned, Actor) and spawned.ai:
+                entity_factories.apply_random_modification(spawned, floor_number)
 #create L shaped tunels between these two points
 def tunnels_between(start: Tuple[int, int], end: Tuple[int, int]) -> Iterator[Tuple[int, int]]:
     x1, y1 = start

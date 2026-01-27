@@ -61,7 +61,7 @@ class ExtraBrain(Modification):
     def __init__(self, level: int = 1):
         super().__init__(
             "Xtra Brain", 
-            "Develop an advanced Growth on the left side of your brain",
+            "Develop an advanced Growth which allows for faster though processing",
             "internal",
             level
         )
@@ -100,11 +100,13 @@ class ExtraChromie(Modification):
 class BigArm(Modification):
     #ARM EXTERNAL
     #gives extra strength
-    def __init__(self):
+    def __init__(self, level :int = 1):
         super().__init__(
             "Mega[RM]", 
             "Mega Removable Appendage, Increase size and density of a user's Upper extremity", 
-            "internal")
+            "internal",
+            level
+            )
     def get_stat_bonus():
         return{"strength": 3}
         
@@ -127,7 +129,8 @@ class NumbDown(Modification):
     def get_stat_bonuses(self):
     # Sets AP to 2 (assuming base is 4)
         return {"max_ap": -2 , 
-                "power": 4* self.level//2, 
-                "defence": 4* self.level//2}
+                "power": 2* self.level, 
+                "defence": 2* self.level
+                }
 
         

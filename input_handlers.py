@@ -747,3 +747,6 @@ class ModificationApplicationHandler(AskUserEventHandler):
         )
         
         return MainGameEventHandler(self.engine)
+    
+class EnemyInfoHandler(SelectIndexHandler):
+    pass
