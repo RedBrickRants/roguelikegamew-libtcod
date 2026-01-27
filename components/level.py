@@ -6,6 +6,7 @@ from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
     from entity import Actor
+    from body_modification import Modification
 
 
 class Level(BaseComponent):

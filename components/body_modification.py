@@ -7,15 +7,30 @@ from components.body import Body, BodyPart
 class Modification:
     parent: BodyPart
     
-    def __init__(self, name: str, description: str, mod_type: str ):
+    def __init__(self, name: str, description: str, mod_type: str, level: int = 1):
         self.name = name
         self.description = description
         self.mod_type = mod_type
         self.parent = None
+        self.level = level  
+        self.max_level = 5 
+
+
     
     @property
     def get_mod_location(self) -> str:
         return self.mod_type
+    
+    def can_level_up(self) -> bool:
+        """Check if this mod can level up"""
+        return self.level < self.max_level
+    
+    def level_up(self) -> bool:
+        """Increase mod level by 1. Returns True if successful."""
+        if self.can_level_up():
+            self.level += 1
+            return True
+        return False
 
     def get_stat_bonuses(self) -> dict:
         """Override in subclasses to give stat bonuses"""
@@ -43,16 +58,17 @@ class Modification:
 #In addition Mutations can also give another extremity at random or specific.
 
 class ExtraBrain(Modification):
-    #INTERNAL
-    #Develop an advanced Growth on the left side of your brain:
-    #Gives player an additional Action Point
-    def __init__(self):
-        super().__init__("Xtra Brain", 
-                         "Develop an advanced Growth on the left side of your brain",
-                        "internal"
-                         )
+    def __init__(self, level: int = 1):
+        super().__init__(
+            "Xtra Brain", 
+            "Develop an advanced Growth on the left side of your brain",
+            "internal",
+            level
+        )
+    
     def get_stat_bonuses(self): 
-        return {"max_ap": 1}
+        # Scales with level: +1 AP per level
+        return {"max_ap": 1 * self.level}
 
 class TheTism(Modification):
     #INTRINSIC? its on the rocks
@@ -100,16 +116,18 @@ class DermaMAX(Modification):
 class NumbDown(Modification):
     #INTRINSIC
     #Makes player character "dumber, reduces ap to 2 but greatly increases attack and defence
-    def __init__(self):
+    def __init__(self, level = 1):
         super().__init__(
             "Induced RPD",
             "Extreme Dosage off an in development Multi purpose painkiller caused induced encephalopathy",
-            "intrinsic"
+            "intrinsic",   
         )
 
             
     def get_stat_bonuses(self):
     # Sets AP to 2 (assuming base is 4)
-        return {"max_ap": -2, "power": 4, "defence": 4}
+        return {"max_ap": -2 , 
+                "power": 4* self.level//2, 
+                "defence": 4* self.level//2}
 
         

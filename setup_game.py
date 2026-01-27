@@ -4,6 +4,8 @@ from typing import Optional
 from engine import Engine
 from game_map import GameWorld
 
+from components.body_modification import ExtraBrain
+
 import tcod
 import copy
 import lzma
@@ -56,11 +58,23 @@ def new_game() -> Engine:
     player.inventory.items.append(leather_armor)
     player.equipment.toggle_equip(leather_armor, add_message=False)
 
+    test_mod = ExtraBrain(level=1)
+    player.body.parts[0].internal_modification = test_mod  # Add to head
+    test_mod.parent = player.body.parts[0]
+
+    print(f"Mod level: {test_mod.level}")
+    print(f"Mod bonuses: {test_mod.get_stat_bonuses()}")
+    print(f"Player max AP: {player.action_points.max_ap}")
     print(f"Player Stat bonuses: {engine.player.body.stat_bonuses}")
     print(f"Player AP bonuses: {engine.player.action_points.ap_bonuses}")
     print(f"Player max AP: {engine.player.action_points.max_ap}")
     print(f"Player body parts: {[p.name for p in engine.player.body.parts]}")
-    
+
+    test_mod.level_up()
+    print(f"After level up - Mod level: {test_mod.level}")
+    print(f"After level up - Bonuses: {test_mod.get_stat_bonuses()}")
+    print(f"After level up - Player max AP: {player.action_points.max_ap}")
+        
     return engine
 
 def load_game(filename: str) -> Engine:
