@@ -8,6 +8,7 @@ from components.action_points import ActionPoints
 from components.body import Body
 from entity import Actor, Item
 import components.body_templates
+from components.body_modification import ExtraBrain, NumbDown, BigArm
 
 player = Actor(
     glyph="@", 
@@ -87,4 +88,37 @@ leather_armor = Item(
 
 chain_mail = Item(
     glyph="[", colour=(139, 69, 19), name="Chain Mail", equippable=equippable.ChainMail()
+)
+
+
+
+# Modification Items
+brain_mod_item = Item(
+    glyph="§",
+    colour=(255, 100, 255),
+    name="Neural Enhancer",
+    consumable=consumable.ModificationConsumable(
+        modification_class=ExtraBrain,
+        initial_level=1
+    )
+)
+
+numb_down_item = Item(
+    glyph="§",
+    colour=(100, 100, 100),
+    name="Painkiller Overdose",
+    consumable=consumable.ModificationConsumable(
+        modification_class=NumbDown,
+        initial_level=1
+    )
+)
+
+big_arm_item = Item(
+    glyph="§",
+    colour=(200, 50, 50),
+    name="Muscle Growth Serum",
+    consumable=consumable.ModificationConsumable(
+        modification_class=BigArm,
+        initial_level=1
+    )
 )

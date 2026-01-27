@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 from components.base_component import BaseComponent
 from exceptions import Impossible
-from input_handlers import ActionOrHandler, AreaRangedAttackHandler, SingleRangedAttackHandler
+from input_handlers import ActionOrHandler, AreaRangedAttackHandler, SingleRangedAttackHandler, ModificationApplicationHandler
 
 
 
@@ -20,12 +20,14 @@ class Consumable(BaseComponent):
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
         """Try to return the action for this item."""
         return actions.ItemAction(consumer, self.parent)
+    
     def activate(self, action: actions.ItemAction)-> None:
         """Invoke this items ability.
 
         `action` is the context for this activation.
         """
         raise NotImplementedError()
+    
     def consume(self)-> None:
         """Removes the consumed item from its current containing inventory"""
         entity = self.parent
@@ -144,3 +146,25 @@ class LightningDamageConsumable(Consumable):
             self.consume()
         else:
             raise Impossible("No enemy is close enough to strike.")
+
+class ModificationConsumable(Consumable):
+    """A consumable that applies a modification to a body part"""
+    def __init__(self, modification_class, initial_level: int = 1):
+        self.modification_class = modification_class
+        self.initial_level =  initial_level
+
+    def get_action(self, consumer: Actor) ->Optional[ActionOrHandler]:
+        self.engine.message_log.add_message(
+            "Select a body part to modify.", colour.needs_target
+        )
+        return ModificationApplicationHandler(
+            self.engine,
+            modification_item=self.parent,
+            modification_class=self.modification_class,
+            initial_level=self.initial_level
+        )
+
+    def activate(self, action: actions.ItemAction) -> None:
+        """This gets called by the handler after body part is selected"""
+        # We'll implement the actual application logic
+        pass

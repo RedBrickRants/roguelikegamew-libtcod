@@ -12,6 +12,8 @@ import os
 if TYPE_CHECKING:
     from engine import Engine
     from entity import Item
+    from components.body import Body, BodyPart
+    from components.body_modification import Modification
 
 MOVE_KEYS = {
     # Arrow keys.
@@ -78,7 +80,7 @@ class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
         assert not isinstance(state, Action), f"{self!r} can not handle actions."
         return self
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         raise NotImplementedError()
 
     def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
@@ -91,7 +93,7 @@ class PopupMessage(BaseEventHandler):
         self.parent = parent_handler
         self.text = text
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         """Render the parent and dim the result, then print the message on top."""
         self.parent.on_render(console)
         console.rgb["fg"] //= 8
@@ -207,7 +209,7 @@ class AskUserEventHandler(EventHandler):
 class CharacterScreenEventHandler(AskUserEventHandler):
     TITLE = "Character Information"
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         super().on_render(console)
 
         if self.engine.player.x <= 30:
@@ -223,7 +225,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             x=x,
             y=y,
             width=width,
-            height=7,
+            height=12,
             title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
@@ -246,13 +248,16 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             x=x + 1, y=y + 4, string=f"Attack: {self.engine.player.fighter.strength}"
         )
         console.print(
-            x=x + 1, y=y + 5, string=f"defence: {self.engine.player.fighter.defence}"
+            x=x + 1, y=y + 5, string=f"Defence: {self.engine.player.fighter.defence}"
+        )
+        console.print(
+            x = x+1, y = y+6, string = f"Bonus AP: {self.engine.player.action_points.ap_bonuses}"
         )
 
 class LevelUpEventHandler(AskUserEventHandler):
     TITLE = "Level Up"
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         super().on_render(console)
 
         if self.engine.player.x <= 30:
@@ -497,7 +502,7 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         self.radius = radius
         self.callback = callback
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         """Highlight the tile under the cursor."""
         super().on_render(console)
 
@@ -614,3 +619,131 @@ class LogHistoryViewer(EventHandler):
         else:  # Any other key moves back to the main game state.
             return MainGameEventHandler(self.engine)
         return None
+    
+class ModificationApplicationHandler(AskUserEventHandler):
+    """Handles selecting which body part to apply a modification to"""
+
+    TITLE = "Apply Modification"
+
+    def __init__(self, engine: Engine, modification_item: Item, 
+                    modification_class, initial_level: int):
+        super().__init__(engine)
+        self.modification_item = modification_item
+        self.modification_class = modification_class
+        self.initial_level = initial_level
+
+    def on_render(self, console: tcod.Console) -> None:
+        """Render body part selection menu"""
+        super().on_render(console)
+        
+        player = self.engine.player
+        body_parts = player.body.parts
+        
+        # Position menu
+        if player.x <= 30:
+            x = 40
+        else:
+            x = 0
+        y = 0
+        
+        # Calculate menu size
+        height = len(body_parts) + 4
+        width = 40
+        
+        console.draw_frame(
+            x=x, y=y,
+            width=width, height=height,
+            title=self.TITLE,
+            clear=True,
+            fg=colour.white,
+            bg=colour.black
+        )
+        
+        # Show modification info
+        mod_instance = self.modification_class(level=self.initial_level)
+        console.print(
+            x=x + 1, y=y + 1,
+            string=f"Mod: {mod_instance.name} (Lvl {self.initial_level})"
+        )
+        console.print(
+            x=x + 1, y=y + 2,
+            string=f"Type: {mod_instance.mod_type}"
+        )
+        
+        # List body parts
+        for i, part in enumerate(body_parts):
+            key = chr(ord("a") + i)
+            
+            # Show what's already equipped
+            current_internal = part.internal_modification
+            current_external = part.external_modification
+            
+            status = ""
+            if current_internal:
+                status += f" [I:{current_internal.name}]"
+            if current_external:
+                status += f" [E:{current_external.name}]"
+            
+            console.print(
+                x=x + 1, y=y + 3 + i,
+                string=f"({key}) {part.name}{status}"
+            )
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        player = self.engine.player
+        key = event.sym
+        index = key - tcod.event.KeySym.a
+        
+        if 0 <= index < len(player.body.parts):
+            selected_part = player.body.parts[index]
+            return self.on_body_part_selected(selected_part)
+        
+        return super().ev_keydown(event)
+
+    def on_body_part_selected(self, body_part: BodyPart) -> Optional[ActionOrHandler]:
+        """Apply the modification to the selected body part"""
+        
+        
+        # Create the modification instance
+        new_mod = self.modification_class(level=self.initial_level)
+        
+        # Determine which slot based on mod type
+        if new_mod.mod_type == "internal":
+            if body_part.internal_modification:
+                self.engine.message_log.add_message(
+                    f"The {body_part.name} already has an internal modification!",
+                    colour.impossible
+                )
+                return None
+            body_part.internal_modification = new_mod
+            new_mod.parent = body_part
+            
+        elif new_mod.mod_type == "external":
+            if body_part.external_modification:
+                self.engine.message_log.add_message(
+                    f"The {body_part.name} already has an external modification!",
+                    colour.impossible
+                )
+                return None
+            body_part.external_modification = new_mod
+            new_mod.parent = body_part
+            
+        elif new_mod.mod_type == "intrinsic":
+            if self.engine.player.body.intrinsic_modification:
+                self.engine.message_log.add_message(
+                    "You already have an intrinsic modification!",
+                    colour.impossible
+                )
+                return None
+            self.engine.player.body.intrinsic_modification = new_mod
+            new_mod.parent = body_part  # Still needs a parent for reference
+        
+        # Remove the item from inventory
+        self.modification_item.consumable.consume()
+        
+        self.engine.message_log.add_message(
+            f"Applied {new_mod.name} to {body_part.name}!",
+            colour.status_effect_applied
+        )
+        
+        return MainGameEventHandler(self.engine)
