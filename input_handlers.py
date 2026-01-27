@@ -11,7 +11,7 @@ import os
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Item
+    from entity import Item, Actor
     from components.body import Body, BodyPart
     from components.body_modification import Modification
 
@@ -426,9 +426,12 @@ class SelectIndexHandler(AskUserEventHandler):
     def on_render(self, console: tcod.console.Console)-> None:
         """Highlight the tile under the cursor."""
         super().on_render(console)
-        x, y = self.engine.mouse_location
-        console.rgb["bg"][x,y] = colour.white
-        console.rgb["fg"][x,y] = colour.black
+
+        world_x, world_y = self.engine.mouse_location
+        screen_x = world_x - self.engine.camera_x
+        screen_y = world_y - self.engine.camera_y
+        console.rgb["bg"][screen_x,screen_y] = colour.white
+        console.rgb["fg"][screen_x,screen_y] = colour.black
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         """Check for key movement or confirmation keys."""
@@ -558,7 +561,7 @@ class MainGameEventHandler(EventHandler):
         elif key == tcod.event.KeySym.c:
             return CharacterScreenEventHandler(self.engine)
         elif key == tcod.event.KeySym.SLASH:
-            return LookHandler(self.engine)
+            return EnemyLookHandler(self.engine)
 
 
         # No valid key was pressed
@@ -632,7 +635,7 @@ class ModificationApplicationHandler(AskUserEventHandler):
         self.modification_class = modification_class
         self.initial_level = initial_level
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         """Render body part selection menu"""
         super().on_render(console)
         
@@ -747,6 +750,73 @@ class ModificationApplicationHandler(AskUserEventHandler):
         )
         
         return MainGameEventHandler(self.engine)
+
+class EnemyLookHandler(SelectIndexHandler):
+    def on_index_selected(self, x: int, y: int) -> Optional[ActionOrHandler]:
+        target = self.engine.game_map.get_actor_at_location(x, y)
+        if target:
+            # We found someone! Let's switch to the info screen.
+            return EnemyInfoHandler(self.engine, target)
+        
+        # If no one is there, we just go back to the main game.
+        return MainGameEventHandler(self.engine)
     
-class EnemyInfoHandler(SelectIndexHandler):
-    pass
+class EnemyInfoHandler(AskUserEventHandler):
+    TITLE = "Enemy Information"
+    def __init__(self, engine: Engine, target: Actor):
+        super().__init__(engine)
+        self.target = target
+    
+    def on_render(self, console: tcod.console.Console) -> None:
+        """Render body part selection menu"""
+        super().on_render(console)
+
+        target = self.target
+
+        if target.x <= 30:
+            x = 40
+        else:
+            x = 0
+        y = 0
+
+        height = 11
+        width = 30
+
+        console.draw_frame(
+            x = x,
+            y = y,
+            width = width, height=height,
+            title = self.TITLE,
+            clear= True,
+            fg =colour.white,
+            bg = colour.black
+        )
+        
+        console.print(
+            x=x+1, y=y+2,
+            string = f"Name: {target.name}"
+        )
+        console.print(
+            x=x+1, y=y+3,
+            string = f"HP: {target.fighter.hp}/{target.fighter.max_hp}"
+        )
+        console.print(
+            x=x+1, y=y+4,
+            string = f"Character: {target.glyph}"
+        )
+        console.print(
+            x=x+1, y=y+5,
+            string = f"Attack: {target.fighter.strength}"
+        )
+        console.print(
+            x=x+1, y=y+6,
+            string = f"Defence: {target.fighter.defence}"
+        )
+        console.print(
+            x=x+1, y=y+7,
+            string = f"AP: {target.action_points.ap}/{target.action_points.max_ap}"
+        )
+        console.print(
+            x=x+1, y=y+8,
+            string = f"Mods: {target.body.applied_mods}"
+        )

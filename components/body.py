@@ -23,8 +23,22 @@ class Body():
         for part in self.parts:
             part.parent = self
     
-
-    # In components/body.py
+    @property
+    def applied_mods(self) -> List:
+        mods = []
+        for part in self.parts:
+            if part.external_modification:
+                part_mod = part.external_modification.name
+                mods.append(part_mod)
+            if part.internal_modification:
+                part_mod = part.internal_modification.name
+                mods.append(part_mod)
+        
+        if self.intrinsic_modification:
+            mod = self.intrinsic_modification.name
+            mods.append(mod)
+        return mods
+    
     @property
     def stat_bonuses(self) -> dict:
         """Aggregate all stat bonuses from all body parts"""
@@ -32,10 +46,12 @@ class Body():
         
         # Check body parts
         for part in self.parts:
+
             if part.internal_modification:
                 part_bonuses = part.internal_modification.get_stat_bonuses()
                 for stat, value in part_bonuses.items():
                     bonuses[stat] = bonuses.get(stat, 0) + value
+                
             
             if part.external_modification:
                 part_bonuses = part.external_modification.get_stat_bonuses()
