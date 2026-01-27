@@ -4,7 +4,9 @@ from components.body import BodyPart
 if TYPE_CHECKING:
     pass
     
-
+class BodyType:
+    def __init__(self):
+        pass
 def humanoid():
     return[
         BodyPart("head", "head"),

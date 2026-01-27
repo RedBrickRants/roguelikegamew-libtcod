@@ -107,7 +107,7 @@ class BigArm(Modification):
             "internal",
             level
             )
-    def get_stat_bonus():
+    def get_stat_bonuses(self):
         return{"strength": 3}
         
 class DermaMAX(Modification):
@@ -127,9 +127,9 @@ class NumbDown(Modification):
 
             
     def get_stat_bonuses(self):
-    # Sets AP to 2 (assuming base is 4)
+    
         return {"max_ap": -2 , 
-                "power": 2* self.level, 
+                "strength": 2* self.level, 
                 "defence": 2* self.level
                 }
 

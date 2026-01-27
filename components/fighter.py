@@ -42,10 +42,16 @@ class Fighter(BaseComponent):
 
     @property
     def strength_bonus(self) -> int:
+        bonus = 0
         if self.parent.equipment:
-            return self.parent.equipment.strength_bonus
-        else:
-            return 0
+            bonus += self.parent.equipment.strength_bonus
+    
+        if self.parent.body:
+            bonus += self.parent.body.stat_bonuses.get("strength", 0)
+       
+        
+        return bonus
+
 
     def heal(self, amount: int)-> int:
         if self.hp == self.max_hp:

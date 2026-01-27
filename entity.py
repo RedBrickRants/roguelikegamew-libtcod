@@ -120,6 +120,8 @@ class Actor(Entity):
         return bool(self.ai)
     
     
+    
+    
 class Item(Entity):
     def __init__(
             self, 
