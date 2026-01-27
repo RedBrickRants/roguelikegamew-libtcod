@@ -4,6 +4,7 @@ from typing import Optional, Tuple, TYPE_CHECKING
 
 import colour
 import exceptions
+import random
 if TYPE_CHECKING:
     from engine import Engine
     from entity import Actor, Entity, Item
@@ -145,23 +146,63 @@ class BumpAction(ActionWithADirection):
         
 class MeleeAction(ActionWithADirection):
     ap_cost = 2
-    def execute(self)-> None:
-        
+
+    def perform(self) -> None:
+        """Override perform to handle exhausted attacks"""
+        if hasattr(self.entity, "action_points"):
+            if self.entity.action_points.ap >= self.ap_cost:
+                # Normal attack
+                self.entity.action_points.spend(self.ap_cost)
+                self.exhausted = False  # Track if exhausted
+                self.execute()
+            else:
+                # Exhausted attack
+                if random.random() < 0.3:  # 30% chance to hit
+                    self.entity.action_points.spend(self.entity.action_points.ap)
+                    self.exhausted = True  # Track for damage penalty
+                    self.execute()
+                    
+                else:
+                    self.entity.action_points.spend(self.entity.action_points.ap)
+                    raise exceptions.Impossible(
+                        f"{self.entity.name} swings exhaustedly and misses!"
+                    )
+        else:
+            self.exhausted = False
+            self.execute()
+
+    def execute(self) -> None:
         target = self.target_actor
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
         
+        # Apply damage penalty if exhausted
         damage = self.entity.fighter.strength - target.fighter.defence
+        if hasattr(self, 'exhausted') and self.exhausted:
+            damage = damage // 2  # Half damage when exhausted!
+        
         attack_description = f"{self.entity.name.capitalize()} attacks {target.name}"
+        
         if self.entity is self.engine.player:
-            attac_colour = colour.player_atk
+            attack_colour = colour.player_atk
         else: 
-            attac_colour = colour.enemy_atk
-        if damage > 0:
-            self.engine.message_log.add_message(f"{attack_description} for {damage} damage.",attac_colour)
+            attack_colour = colour.enemy_atk
+        
+        if damage > 0 and hasattr(self, "exhausted") and self.exhausted:
+            self.engine.message_log.add_message(
+                        f"{self.entity.name} takes an exhausted swing and hits {self.target_actor.name} for {damage} damage!",
+                        colour.player_atk if self.entity is self.engine.player else colour.enemy_atk
+                    )
+            target.fighter.hp -= damage
+        elif damage >0:
+            self.engine.message_log.add_message(
+                f"{attack_description} for {damage} damage.", attack_colour
+            )
             target.fighter.hp -= damage
         else:
-            self.engine.message_log.add_message(f"{attack_description} but does no damage", attac_colour)
+            self.engine.message_log.add_message(
+                f"{attack_description} but does no damage", attack_colour
+            )
 
 class MovementAction(ActionWithADirection):
 
