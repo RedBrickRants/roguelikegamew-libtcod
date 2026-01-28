@@ -641,7 +641,8 @@ class ModificationApplicationHandler(AskUserEventHandler):
         
         player = self.engine.player
         body_parts = player.body.parts
-        
+        mod_instance = self.modification_class(level=self.initial_level)
+
         # Position menu
         if player.x <= 30:
             x = 40
@@ -649,9 +650,13 @@ class ModificationApplicationHandler(AskUserEventHandler):
             x = 0
         y = 0
         
-        # Calculate menu size
-        height = len(body_parts) + 4
-        width = 40
+        # Calculate menu size based on mod type
+        if mod_instance.mod_type == "intrinsic":
+            height = 5  # Smaller menu for intrinsic
+            width = 40
+        else:
+            height = len(body_parts) + 4
+            width = 40
         
         console.draw_frame(
             x=x, y=y,
@@ -672,36 +677,77 @@ class ModificationApplicationHandler(AskUserEventHandler):
             x=x + 1, y=y + 2,
             string=f"Type: {mod_instance.mod_type}"
         )
-        
-        # List body parts
-        for i, part in enumerate(body_parts):
-            key = chr(ord("a") + i)
-            
-            # Show what's already equipped
-            current_internal = part.internal_modification
-            current_external = part.external_modification
-            
-            status = ""
-            if current_internal:
-                status += f" [I:{current_internal.name}]"
-            if current_external:
-                status += f" [E:{current_external.name}]"
-            
+        if mod_instance.mod_type == "intrinsic":
+            # Intrinsic mods have no choice - just confirm
             console.print(
-                x=x + 1, y=y + 3 + i,
-                string=f"({key}) {part.name}{status}"
+                x=x + 1, y=y + 3,
+                string="This mod alters your body's composition"
             )
+            console.print(
+                x=x + 1, y=y + 4,
+                string="Press (a) to apply or ESC to cancel"
+            )
+        else:
+            for i, part in enumerate(body_parts):
+                key = chr(ord("a") + i)
+                
+                # Show what's already equipped
+                current_internal = part.internal_modification
+                current_external = part.external_modification
+                
+                status = ""
+                if current_internal:
+                    status += f" [I:{current_internal.name}]"
+                if current_external:
+                    status += f" [E:{current_external.name}]"
+                
+                console.print(
+                    x=x + 1, y=y + 3 + i,
+                    string=f"({key}) {part.name}{status}"
+                )
+
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         player = self.engine.player
         key = event.sym
-        index = key - tcod.event.KeySym.a
         
-        if 0 <= index < len(player.body.parts):
-            selected_part = player.body.parts[index]
-            return self.on_body_part_selected(selected_part)
+        mod_instance = self.modification_class(level=self.initial_level)
+        if mod_instance.mod_type == "intrinsic":
+            if key == tcod.event.KeySym.a:
+                return self.apply_intrinsic_mod()
+        else:
+            index = key - tcod.event.KeySym.a
+            if 0 <= index < len(player.body.parts):
+                selected_part = player.body.parts[index]
+                return self.on_body_part_selected(selected_part)
         
         return super().ev_keydown(event)
+    
+
+
+
+    def apply_intrinsic_mod(self) -> Optional[ActionOrHandler]:
+        """Apply an intrinsic modification"""
+        new_mod = self.modification_class(level=self.initial_level)
+        
+        if self.engine.player.body.intrinsic_modification:
+            self.engine.message_log.add_message(
+                "You already have an intrinsic modification!",
+                colour.impossible
+            )
+            return None
+        
+        self.engine.player.body.intrinsic_modification = new_mod
+        new_mod.parent = self.engine.player.body
+        
+        # Remove item and show message
+        self.modification_item.consumable.consume()
+        self.engine.message_log.add_message(
+            f"Applied {new_mod.name} to your body!",
+            colour.status_effect_applied
+        )
+        
+        return MainGameEventHandler(self.engine)
 
     def on_body_part_selected(self, body_part: BodyPart) -> Optional[ActionOrHandler]:
         """Apply the modification to the selected body part"""
@@ -739,7 +785,7 @@ class ModificationApplicationHandler(AskUserEventHandler):
                 )
                 return None
             self.engine.player.body.intrinsic_modification = new_mod
-            new_mod.parent = body_part  # Still needs a parent for reference
+            new_mod.parent = self.engine.player.body  
         
         # Remove the item from inventory
         self.modification_item.consumable.consume()

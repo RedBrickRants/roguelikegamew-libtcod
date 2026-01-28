@@ -108,7 +108,7 @@ class BigArm(Modification):
             level
             )
     def get_stat_bonuses(self):
-        return{"strength": 3}
+        return{"strength": 3 *(self.level)}
         
 class DermaMAX(Modification):
     #INTERNAL TORSO

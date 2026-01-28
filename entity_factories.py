@@ -155,7 +155,7 @@ chain_mail = Item(
 
 # Modification Items
 brain_mod_item = Item(
-    glyph="§",
+    glyph=":",
     colour=(255, 100, 255),
     name="Neural Enhancer",
     consumable=consumable.ModificationConsumable(
@@ -165,8 +165,8 @@ brain_mod_item = Item(
 )
 
 numb_down_item = Item(
-    glyph="§",
-    colour=(100, 100, 100),
+    glyph=":",
+    colour=(250, 100, 250),
     name="Painkiller Overdose",
     consumable=consumable.ModificationConsumable(
         modification_class=NumbDown,
@@ -175,7 +175,7 @@ numb_down_item = Item(
 )
 
 big_arm_item = Item(
-    glyph="§",
+    glyph=":",
     colour=(200, 50, 50),
     name="Muscle Growth Serum",
     consumable=consumable.ModificationConsumable(
