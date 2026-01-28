@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List, Iterable,Iterator, Optional, TYPE_CHECKING
-from tcod.console import Console
 from entity import Actor, Item
+
 import numpy as np #type: ignore
 import tile_types
 import colour
@@ -9,19 +9,16 @@ import colour
 if TYPE_CHECKING:
     from engine import Engine
     from entity import Entity
+    
 
 class GameMap:
+    """GAME MAP CLASS: is a store of value used to generate station Floor,"""
     #initializer takes width and height and assigns them
     def __init__(self,engine: Engine, width: int, height: int, entites: Iterable[Entity]=()):
         self.engine = engine
         self.width, self.height = width, height
         self.entities = set(entites) #set allows us to make an unordered collection of unique elements
         self.tiles = np.full((width, height), fill_value = tile_types.wall, order = "F")
-
-        #list slicing allows for access to the specific rows and columns of the tiles array
-        #[row, columns]
-        #self.tiles[30:33, 22]=tile_types.wall
-
         self.visible = np.full((width, height), fill_value= False, order= "F")
         self.explored = np.full((width, height), fill_value= False, order= "F")
         self.downstairs_location = (0, 0)
@@ -35,23 +32,26 @@ class GameMap:
     def actors(self)-> Iterator[Actor]:
         yield from(entity for entity in self.entities if isinstance(entity, Actor) and entity.is_alive)
 
+    @property
+    def items(self)-> Iterator[Item]:
+        yield from (entity for entity in self.entities if isinstance(entity, Item))
+
     def get_blocking_entity_at_location(self, location_x: int, location_y: int)->Optional[Entity]:
+        """Return the x and y value of a particular entity witht the "blocks_movement" attribute"""
         for entity in self.entities:
             if entity.blocks_movement and entity.x == location_x and entity.y == location_y:
                 return entity
         return None
-    @property
-    def items(self)-> Iterator[Item]:
-        yield from (entity for entity in self.entities if isinstance(entity, Item))
     
     def get_actor_at_location(self, x: int, y: int)-> Optional[Actor]:
+        """Returns the x and y position of an "Actor"  at a given location"""
         for actor in self.actors:
             if actor.x == x and actor.y == y:
                 return actor
         return None   
 
-    #Inbounds returns true if the x and y are out of the map bounds
     def in_bounds(self, x:  int, y: int)->bool:
+        """Returns true if the x and y are out of the map bounds"""
         return 0 <=x <self.width and 0 <= y< self.height
 
 
@@ -87,11 +87,13 @@ class GameWorld:
         
 
     def store_floor(self):
+        """Appends the current GameMap object to the floor list"""
         if self.engine.player not in self.engine.game_map.entities:
             self.engine.game_map.entities.add(self.engine.player)
         self.floors.append(self.engine.game_map)  
 
     def traverse_floors(self, direction: str)-> None:
+        """Allows the player to travel up and down the stairs"""
         if direction == "down":
             if not self.floors:
                 self.floors.append(self.engine.game_map)
@@ -118,45 +120,12 @@ class GameWorld:
             if self.engine.player not in self.engine.game_map.entities:
                 self.engine.game_map.entities.add(self.engine.player)
             self.engine.player.x, self.engine.player.y = self.engine.game_map.downstairs_location
-
-    """def traverse_floors(self, direction: str) -> None:
-        if direction == "down":
-            self.current_floor += 1
-            
-            # Ensure floors list is big enough
-            while len(self.floors) <= self.current_floor:
-                self.floors.append(None)
-            
-            # Store the floor we're leaving
-            self.floors[self.current_floor - 1] = self.engine.game_map
-            
-            if self.floors[self.current_floor] is None:
-                # Generate new floor
-                new_floor = self.generate_floor()
-                self.floors[self.current_floor] = new_floor
-                self.engine.game_map = new_floor
-            else:
-                # Load existing floor
-                self.engine.game_map = self.floors[self.current_floor]
-                self.engine.player.place(*self.engine.game_map.upstairs_location, self.engine.game_map)
-                
-        if direction == "up":
-            if self.current_floor == 0:
-                self.engine.message_log.add_message("You cant go back up!", colour.descend)
-                return
-            
-            # Store current floor
-            self.floors[self.current_floor] = self.engine.game_map
-            
-            self.current_floor -= 1
-            self.engine.game_map = self.floors[self.current_floor]
-            self.engine.player.place(*self.engine.game_map.downstairs_location, self.engine.game_map)"""
-            
+         
 
 
     def generate_floor(self) -> None:
+        """Generates  and returns GameMap objects"""
         from procgen import generate_station
-
         new_floor = generate_station(
             max_rooms=self.max_rooms,
             room_min_size=self.room_min_size,
