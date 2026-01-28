@@ -73,17 +73,17 @@ class Engine:
           # Stats panel 
           render_functions.render_stats_panel(
                console, self.player,
-               121, 0, 19, 21  # Was 61, now 121 (after the 120-wide map)
+               60, 0, 19, 21  # Was 61, now 121 (after the 120-wide map)
           )
           
           # Inventory panel
           render_functions.render_inventory_panel(
                console, self.player,
-               121, 22, 19, 21  # Was 61, now 121
+               60, 22, 19, 21  # Was 61, now 121
           )
           
           # Log 
-          self.message_log.render(console, 0, 61, 120, 6)  # Was y=44, now 61
+          self.message_log.render(console, 0, 39, 120, 6)  # Was y=44, now 61
           
           # Mouse hover
           render_functions.render_names_at_mouse(console, 0, 60, self)  # Was 43, now 60

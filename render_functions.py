@@ -48,24 +48,6 @@ def render_names_at_mouse_location(
     )
     console.print (x=x, y=y, string=names_at_mouse_location)
 
-def render_ap_bar(
-    console: console.Console,
-    current_ap: int,
-    maximum_ap: int,
-    location: Tuple[int, int]
-) -> None:
-    x, y = location
-    
-    # Visual bar like HP bar
-    bar_width = maximum_ap
-    filled = "█" * current_ap
-    empty = "░" * (maximum_ap - current_ap)
-    
-    console.print(
-        x=x, y=y, 
-        string=f"AP:[{empty}{filled}] {current_ap}/{maximum_ap}", 
-        fg=colour.bar_text
-    )
     
 
 def render_map(console: console.Console, game_map:GameMap, camera_x: int = 0, camera_y: int = 0, 

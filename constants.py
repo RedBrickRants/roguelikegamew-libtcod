@@ -1,8 +1,8 @@
 #constants.py
  
 # Screen Dimensions
-SCREEN_WIDTH = 140  
-SCREEN_HEIGHT = 67  
+SCREEN_WIDTH = 80 
+SCREEN_HEIGHT = 45 
 
 # Map viewport (visible portion on screen)
 CAMERA_WIDTH = SCREEN_WIDTH
@@ -12,8 +12,8 @@ CAMERA_HEIGHT = SCREEN_HEIGHT
 MAP_WIDTH = 200 # Will increase to 200+ later
 MAP_HEIGHT = 100  # Will increase to 100+ later
 
-MAP_VIEWPORT_WIDTH = 120
-MAP_VIEWPORT_HEIGHT = 60
+MAP_VIEWPORT_WIDTH = SCREEN_WIDTH
+MAP_VIEWPORT_HEIGHT = SCREEN_HEIGHT
 
 # UI Panel dimensions
 STATS_PANEL_X = 61
