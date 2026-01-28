@@ -45,8 +45,7 @@ class Engine:
      def update_fov(self) -> None:
           """Recalculate the FOV when notable changes happen"""
           self.game_map.visible[:] = compute_fov(
-          self.game_map.tiles["transparent"], (self.player.x, self.player.y), radius=6
-          ) 
+          self.game_map.tiles["transparent"], (self.player.x, self.player.y), radius=8) 
           self.game_map.explored |= self.game_map.visible
 
      def update_camera(self, map_viewport_width:int, map_viewport_height:int) -> None:
@@ -60,30 +59,54 @@ class Engine:
 
           
      def render(self, console: Console) -> None:
+          """Calls all necessary render functions in one central location"""
           console.clear()
 
           self.update_camera(map_viewport_width= const.MAP_VIEWPORT_WIDTH, map_viewport_height=const.MAP_VIEWPORT_HEIGHT)
-          # Map and entities (now takes up more space)
-          render_functions.render_map(console, self.game_map, self.camera_x, self.camera_y, 
-                                viewport_width = const.MAP_VIEWPORT_WIDTH, viewport_height = const.MAP_VIEWPORT_HEIGHT)
-          render_functions.render_entities(console, self.game_map, self.camera_x, self.camera_y)
-
+          # Map 
+          render_functions.render_map(
+               console, 
+               self.game_map, 
+               self.camera_x, 
+               self.camera_y, 
+               viewport_width = const.MAP_VIEWPORT_WIDTH, 
+               viewport_height = const.MAP_VIEWPORT_HEIGHT
+               )
           
+          #Entities
+          render_functions.render_entities(
+               console, 
+               self.game_map, 
+               self.camera_x, 
+               self.camera_y
+               )
           
           # Stats panel 
           render_functions.render_stats_panel(
                console, self.player,
-               60, 0, 19, 21  # Was 61, now 121 (after the 120-wide map)
+               const.STATS_PANEL_X, 
+               const.STATS_PANEL_Y, 
+               const.STATS_PANEL_WIDTH, 
+               const.STATS_PANEL_HEIGHT  
           )
           
           # Inventory panel
           render_functions.render_inventory_panel(
                console, self.player,
-               60, 22, 19, 21  # Was 61, now 121
-          )
+               const.INVENTORY_PANEL_X, 
+               const.INVENTORY_PANEL_Y, 
+               const.INVENTORY_PANEL_WIDTH,
+               const.INVENTORY_PANEL_HEIGHT  
+               )
           
           # Log 
-          self.message_log.render(console, 0, 39, 120, 6)  # Was y=44, now 61
+          self.message_log.render(
+               console, 
+               const.LOG_PANEL_X, 
+               const.LOG_PANEL_Y, 
+               const.LOG_PANEL_WIDTH, 
+               const.LOG_PANEL_HEIGHT
+               )  
           
           # Mouse hover
           render_functions.render_names_at_mouse(console, 0, 60, self)  # Was 43, now 60
