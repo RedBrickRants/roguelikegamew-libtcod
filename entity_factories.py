@@ -9,7 +9,7 @@ from components.body import Body
 from entity import Actor, Item
 import components.body_templates
 import random
-from components.body_modification import ExtraBrain, NumbDown, BigArm
+from components.body_modification import ExtraBrain, NumbDown, MuscleMAX
 
 def apply_random_modification(actor: Actor, floor_level: int = 0) -> None:
     """
@@ -23,7 +23,7 @@ def apply_random_modification(actor: Actor, floor_level: int = 0) -> None:
     available_mods = [
         ExtraBrain,
         NumbDown,
-        BigArm,
+        MuscleMAX,
     ]
     
     # Chance to get a mod increases with floor level
@@ -179,7 +179,7 @@ big_arm_item = Item(
     colour=(200, 50, 50),
     name="Muscle Growth Serum",
     consumable=consumable.ModificationConsumable(
-        modification_class=BigArm,
+        modification_class=MuscleMAX,
         initial_level=1
     )
 )

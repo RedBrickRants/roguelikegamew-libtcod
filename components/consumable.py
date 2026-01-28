@@ -155,7 +155,7 @@ class ModificationConsumable(Consumable):
 
     def get_action(self, consumer: Actor) ->Optional[ActionOrHandler]:
         self.engine.message_log.add_message(
-            "Select a body part to modify.", colour.needs_target
+            "Initiating modification process", colour.needs_target
         )
         return ModificationApplicationHandler(
             self.engine,
@@ -165,6 +165,6 @@ class ModificationConsumable(Consumable):
         )
 
     def activate(self, action: actions.ItemAction) -> None:
-        """This gets called by the handler after body part is selected"""
-        # We'll implement the actual application logic
+
         pass
+

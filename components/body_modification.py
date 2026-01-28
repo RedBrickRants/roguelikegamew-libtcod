@@ -15,8 +15,6 @@ class Modification:
         self.level = level  
         self.max_level = 5 
 
-
-    
     @property
     def get_mod_location(self) -> str:
         return self.mod_type
@@ -31,6 +29,9 @@ class Modification:
             self.level += 1
             return True
         return False
+    
+    def on_application(self, actor):
+        pass
 
     def get_stat_bonuses(self) -> dict:
         """Override in subclasses to give stat bonuses"""
@@ -97,13 +98,13 @@ class ExtraChromie(Modification):
     #gives an additional intrinsic/ modification slot on any extremity
     pass
 
-class BigArm(Modification):
-    #ARM EXTERNAL
+class MuscleMAX(Modification):
+    #EXTERNAL
     #gives extra strength
     def __init__(self, level :int = 1):
         super().__init__(
-            "Mega[RM]", 
-            "Mega Removable Appendage, Increase size and density of a user's Upper extremity", 
+            "MslMAX", 
+            "Increase size and density of a user's extremity", 
             "internal",
             level
             )
@@ -123,9 +124,7 @@ class NumbDown(Modification):
             "Induced RPD",
             "Extreme Dosage off an in development Multi purpose painkiller caused induced encephalopathy",
             "intrinsic",   
-        )
-
-            
+        )            
     def get_stat_bonuses(self):
     
         return {"max_ap": -2 , 

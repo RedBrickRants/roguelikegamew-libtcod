@@ -44,7 +44,8 @@ enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
 
 
 def get_max_value_for_floor(
-    max_value_by_floor: List[Tuple[int, int]], floor: int
+    max_value_by_floor: List[Tuple[int, int]], 
+    floor: int
 ) -> int:
     current_value = 0
 
@@ -134,7 +135,7 @@ def place_entities(room: RectRoom, station: GameMap, floor_number: int,) -> None
             spawned = entity.spawn(station, x, y)
             if isinstance(spawned, Actor) and spawned.ai:
                 entity_factories.apply_random_modification(spawned, floor_number)
-                
+
 #create L shaped tunels between these two points
 def tunnels_between(start: Tuple[int, int], end: Tuple[int, int]) -> Iterator[Tuple[int, int]]:
     x1, y1 = start
@@ -149,11 +150,17 @@ def tunnels_between(start: Tuple[int, int], end: Tuple[int, int]) -> Iterator[Tu
     for x, y in tcod.los.bresenham( (corner_x, corner_y), (x2, y2)).tolist():
         yield x, y #special return that returns items one at a time instead of all at once like return
 
-def generate_station(max_rooms: int, room_min_size: int, room_max_size: int, map_width, map_height, engine: Engine)-> GameMap:
+def generate_station(
+        max_rooms: int, 
+        room_min_size: int, 
+        room_max_size: int, 
+        map_width, map_height, 
+        engine: Engine
+    )-> GameMap:
     player = engine.player
     station = GameMap(engine, map_width, map_height, entites=[player])
      
-    rooms: List[List[RectRoom]] = []
+    rooms: List = []
     half_width = map_width //2
     half_height = map_height //2
     quadrants = {
