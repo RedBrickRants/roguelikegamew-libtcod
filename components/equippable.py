@@ -1,7 +1,5 @@
 from __future__ import annotations
-
 from typing import TYPE_CHECKING
-
 from components.base_component import BaseComponent
 from equipment_types import EquipmentType, EquipmentCategory
 
@@ -15,12 +13,12 @@ class Equippable(BaseComponent):
     def __init__(
         self,
         equipment_type: EquipmentType,
-        equip_category: EquipmentCategory, 
+        equip_category: EquipmentCategory,
         strength_bonus: int = 0,
         defence_bonus: int = 0,
     ):
         self.equipment_type = equipment_type
-        self.equipment_category = equip_category
+        self.equip_category = equip_category
         self.strength_bonus = strength_bonus
         self.defence_bonus = defence_bonus
 
@@ -28,34 +26,34 @@ class Equippable(BaseComponent):
 class Dagger(Equippable):
     def __init__(self) -> None:
         super().__init__(
-            equipment_type=EquipmentType.WEAPON, 
-            equip_category= EquipmentCategory.ARM, 
+            equipment_type=EquipmentType.WEAPON,
+            equip_category=EquipmentCategory.ARM,
             strength_bonus=2
-            )
+        )
 
 
 class Sword(Equippable):
     def __init__(self) -> None:
         super().__init__(
-            equipment_type=EquipmentType.WEAPON, 
-            equip_category= EquipmentCategory.ARM, 
+            equipment_type=EquipmentType.WEAPON,
+            equip_category=EquipmentCategory.ARM,
             strength_bonus=4
-            )
+        )
 
 
 class LeatherArmor(Equippable):
     def __init__(self) -> None:
         super().__init__(
-            equipment_type=EquipmentType.ARMOR, 
-            equip_category= EquipmentCategory.TORSO, 
-            defence_bonus=4
-            )
+            equipment_type=EquipmentType.ARMOR,
+            equip_category=EquipmentCategory.TORSO,
+            defence_bonus=1
+        )
 
 
 class ChainMail(Equippable):
     def __init__(self) -> None:
         super().__init__(
-            equipment_type=EquipmentType.ARMOR, 
-            equip_category= EquipmentCategory.TORSO, 
-            defence_bonus=8
-            )
+            equipment_type=EquipmentType.ARMOR,
+            equip_category=EquipmentCategory.TORSO,
+            defence_bonus=3
+        )

@@ -401,7 +401,7 @@ class InventoryActivateHandler(InventoryEventHandler):
             # Return the action for the selected item.
             return item.consumable.get_action(self.engine.player)
         elif item.equippable:
-            return actions.EquipAction(self.engine.player, item)
+            return EquipmentSelectionHandler(self.engine, item)
         else:
             return None
 
@@ -414,6 +414,84 @@ class InventoryDropHandler(InventoryEventHandler):
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
         """Drop this item."""
         return actions.DropItem(self.engine.player, item)
+    
+class EquipmentSelectionHandler(AskUserEventHandler):
+    """Handles selecting which body part to equip an item to"""
+    
+    TITLE = "Select Body Part"
+    
+    def __init__(self, engine: Engine, item: Item):
+        super().__init__(engine)
+        self.item = item
+        self.valid_parts = engine.player.equipment.get_valid_parts_for_item(item)
+    
+    def on_render(self, console: tcod.console.Console) -> None:
+        """Render the body part selection menu"""
+        super().on_render(console)
+        
+        player = self.engine.player
+        
+        # Position menu
+        if player.x <= 30:
+            x = 40
+        else:
+            x = 0
+        y = 0
+        
+        height = len(self.valid_parts) + 4
+        if height < 5:
+            height = 5
+        width = 35
+        
+        console.draw_frame(
+            x=x, y=y,
+            width=width, height=height,
+            title=self.TITLE,
+            clear=True,
+            fg=colour.white,
+            bg=colour.black
+        )
+        
+        # Show item info
+        console.print(
+            x=x + 1, y=y + 1,
+            string=f"Equip: {self.item.name}"
+        )
+        
+        # Show valid body parts
+        if not self.valid_parts:
+            console.print(
+                x=x + 1, y=y + 3,
+                string="No valid body parts!",
+                fg=colour.impossible
+            )
+        else:
+            for i, part in enumerate(self.valid_parts):
+                key = chr(ord("a") + i)
+                
+                # Show what's currently equipped
+                current = player.equipment.equipped_items.get(part)
+                status = ""
+                if current:
+                    status = f" [Currently: {current.name}]"
+                
+                console.print(
+                    x=x + 1, y=y + 3 + i,
+                    string=f"({key}) {part.name}{status}"
+                )
+    
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        player = self.engine.player
+        key = event.sym
+        index = key - tcod.event.KeySym.a
+        
+        if 0 <= index < len(self.valid_parts):
+            selected_part = self.valid_parts[index]
+            return actions.EquipAction(player, self.item, selected_part)
+        
+        return super().ev_keydown(event)
+
+
     
 class SelectIndexHandler(AskUserEventHandler):
     """Handles asking the user for an index on the map"""

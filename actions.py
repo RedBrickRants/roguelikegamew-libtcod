@@ -1,6 +1,7 @@
 #actions.py
 from __future__ import annotations
 from typing import Optional, Tuple, TYPE_CHECKING
+from components.body import BodyPart
 
 import colour
 import exceptions
@@ -82,13 +83,13 @@ class DropItem(ItemAction):
 
 class EquipAction(Action):
     ap_cost = 0
-    def __init__(self, entity: Actor, item: Item):
+    def __init__(self, entity: Actor, item: Item, body_part: BodyPart):
         super().__init__(entity)
-
         self.item = item
+        self.body_part = body_part
 
     def execute(self) -> None:
-        self.entity.equipment.toggle_equip(self.item)
+        self.entity.equipment.toggle_equip(self.item, self.body_part)
 
         
 class WaitAction(Action):

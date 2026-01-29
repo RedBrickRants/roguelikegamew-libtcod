@@ -25,7 +25,8 @@ max_monsters_by_floor = [
 item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     0: [(entity_factories.health_potion, 35), 
         (entity_factories.numb_down_item, 100),
-        (entity_factories.big_arm_item, 100) ],
+        (entity_factories.big_arm_item, 100), 
+        (entity_factories.sword, 100)],
 
     2: [(entity_factories.confusion_scroll, 10)],
     4: [(entity_factories.lightning_scroll, 25), 
@@ -135,6 +136,7 @@ def place_entities(room: RectRoom, station: GameMap, floor_number: int,) -> None
             spawned = entity.spawn(station, x, y)
             if isinstance(spawned, Actor) and spawned.ai:
                 entity_factories.apply_random_modification(spawned, floor_number)
+                spawned.equipment.initialize_slots()
 
 #create L shaped tunels between these two points
 def tunnels_between(start: Tuple[int, int], end: Tuple[int, int]) -> Iterator[Tuple[int, int]]:
@@ -198,6 +200,7 @@ def generate_station(
             if len(rooms) == 0:
                 center_of_first_room = (new_room.center)
                 player.place(*new_room.center, station)
+                player.equipment.initialize_slots()
         
 
             if len(current_quadrants_rooms) > 0:

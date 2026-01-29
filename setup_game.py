@@ -55,10 +55,12 @@ def new_game() -> Engine:
     
 
     player.inventory.items.append(dagger)
-    player.equipment.toggle_equip(dagger, add_message=False)
+    left_arm = player.body.parts[2]  # Or find it properly
+    player.equipment.toggle_equip(dagger, left_arm, add_message=False)
 
     player.inventory.items.append(leather_armor)
-    player.equipment.toggle_equip(leather_armor, add_message=False)
+    torso = player.body.parts[1]
+    player.equipment.toggle_equip(leather_armor, torso, add_message=False)
 
     # After giving player dagger and armor:
     test_brain_mod = copy.deepcopy(entity_factories.brain_mod_item)

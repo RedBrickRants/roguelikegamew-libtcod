@@ -135,7 +135,7 @@ fireball_scroll = Item(
     consumable=consumable.FireballDamageConsumable(damage=12, radius=3),
 )
 dagger = Item(
-    glyph="/", colour=(0, 191, 255), name="Dagger", equippable=equippable.Dagger()
+    glyph="/", colour=(0, 191, 255), name="Dagger", equippable=equippable.Dagger(),
 )
 
 sword = Item(glyph="/", colour=(0, 191, 255), name="Sword", equippable=equippable.Sword())

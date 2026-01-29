@@ -10,7 +10,7 @@ class BodyPart:
     parent: Body
     def __init__(self, name: str, part_type):
         self.name = name
-        self.part_type = EquipmentCategory
+        self.part_type = part_type
         self.internal_modification = None
         self.external_modification = None
         self.parent = None
