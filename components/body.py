@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, List 
 from components.base_component import BaseComponent
+from equipment_types import EquipmentCategory
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -9,7 +10,7 @@ class BodyPart:
     parent: Body
     def __init__(self, name: str, part_type):
         self.name = name
-        self.part_type = part_type
+        self.part_type = EquipmentCategory
         self.internal_modification = None
         self.external_modification = None
         self.parent = None

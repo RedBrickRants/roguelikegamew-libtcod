@@ -9,4 +9,4 @@ class EquipmentCategory(Enum):
     ARM = auto()
     TORSO = auto()
     HEAD=auto()
-    
+    LEG = auto()

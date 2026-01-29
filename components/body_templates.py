@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from components.body import BodyPart
+from equipment_types import EquipmentCategory
 if TYPE_CHECKING:
     pass
     
@@ -9,16 +10,16 @@ class BodyType:
         pass
 def humanoid():
     return[
-        BodyPart("head", "head"),
-        BodyPart("torso", "torso"),
-        BodyPart("left arm", "arm"),
-        BodyPart("right arm", "arm"),
-        BodyPart("left leg", "leg"),
-        BodyPart("right leg", "leg"),
+        BodyPart("head", part_type= EquipmentCategory.HEAD),
+        BodyPart("torso", part_type= EquipmentCategory.TORSO),
+        BodyPart("left arm", part_type= EquipmentCategory.ARM),
+        BodyPart("right arm", part_type= EquipmentCategory.ARM),
+        BodyPart("left leg", part_type= EquipmentCategory.LEG),
+        BodyPart("right leg", part_type= EquipmentCategory.LEG),
     ]
 
 def arachnid():
-    parts = [BodyPart("head", "head"), BodyPart("thorax", "torso")]
+    parts = [BodyPart("head",  part_type= EquipmentCategory.HEAD), BodyPart("thorax",  part_type= EquipmentCategory.TORSO)]
     for i in range(8):
-        parts.append(BodyPart(f"leg {i+1}", "leg"))
+        parts.append(BodyPart(f"leg {i+1}",  part_type= EquipmentCategory.LEG))
     return parts
