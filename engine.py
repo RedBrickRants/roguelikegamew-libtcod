@@ -29,6 +29,11 @@ class Engine:
           self.camera_y = 0
 
 
+          self.map_console = Console(const.MAP_VIEWPORT_WIDTH, const.MAP_VIEWPORT_HEIGHT, order="F")
+          self.stats_console = Console(const.STATS_PANEL_WIDTH, const.STATS_PANEL_HEIGHT, order="F")
+          self.inventory_console = Console(const.INVENTORY_PANEL_WIDTH, const.INVENTORY_PANEL_HEIGHT, order="F")
+          self.log_console = Console(const.LOG_PANEL_WIDTH, const.LOG_PANEL_HEIGHT, order="F")
+
      def handle_enemy_turns(self)-> None:
           for entity in set(self.game_map.actors)- {self.player}:
                if entity.ai:
@@ -62,20 +67,27 @@ class Engine:
           """Calls all necessary render functions in one central location"""
           console.clear()
 
+          # Clear all sub-consoles
+          self.map_console.clear()
+          self.stats_console.clear()
+          self.inventory_console.clear()
+          self.log_console.clear()
+
           self.update_camera(map_viewport_width= const.MAP_VIEWPORT_WIDTH, map_viewport_height=const.MAP_VIEWPORT_HEIGHT)
           # Map 
+          print("attempting to render map")
           render_functions.render_map(
-               console, 
+               self.map_console, 
                self.game_map, 
                self.camera_x, 
                self.camera_y, 
                viewport_width = const.MAP_VIEWPORT_WIDTH, 
                viewport_height = const.MAP_VIEWPORT_HEIGHT
                )
-          
+          print("map rendered")
           #Entities
           render_functions.render_entities(
-               console, 
+               self.map_console, 
                self.game_map, 
                self.camera_x, 
                self.camera_y
@@ -83,30 +95,34 @@ class Engine:
           
           # Stats panel 
           render_functions.render_stats_panel(
-               console, self.player,
-               const.STATS_PANEL_X, 
-               const.STATS_PANEL_Y, 
+               self.stats_console, 
+               self.player,
+               0,0,
                const.STATS_PANEL_WIDTH, 
                const.STATS_PANEL_HEIGHT  
           )
           
           # Inventory panel
           render_functions.render_inventory_panel(
-               console, self.player,
-               const.INVENTORY_PANEL_X, 
-               const.INVENTORY_PANEL_Y, 
+               self.inventory_console,
+               self.player,
+               0,0,
                const.INVENTORY_PANEL_WIDTH,
                const.INVENTORY_PANEL_HEIGHT  
                )
           
           # Log 
           self.message_log.render(
-               console, 
-               const.LOG_PANEL_X, 
-               const.LOG_PANEL_Y, 
+               self.log_console, 
+               0,0, 
                const.LOG_PANEL_WIDTH, 
                const.LOG_PANEL_HEIGHT
-               )  
+               )
+
+          self.map_console.blit(console, dest_x=0, dest_y=0)
+          self.stats_console.blit(console, dest_x=const.STATS_PANEL_X, dest_y=const.STATS_PANEL_Y)
+          self.inventory_console.blit(console, dest_x=const.INVENTORY_PANEL_X, dest_y=const.INVENTORY_PANEL_Y)
+          self.log_console.blit(console, dest_x=const.LOG_PANEL_X, dest_y=const.LOG_PANEL_Y)
           
           # Mouse hover
           render_functions.render_names_at_mouse(console, 0, 60, self)  # Was 43, now 60

@@ -86,15 +86,11 @@ class Equipment(BaseComponent):
             if equipped_item is item:  
                 self.equipped_items[slot] = None
                 self.parent.gamemap.engine.message_log.add_message(
-            f"You swapped the {equipped_item.name} to your {slot.name}."
-        )
+            f"You swapped the {equipped_item.name} to another hand.")
         
-        # 2. CLEAR: Remove whatever is currently in the target slot
-        # We use our existing unequip method to handle messages and logic
         if self.equipped_items.get(body_part) is not None:
             self.unequip_from_part(body_part, add_message=add_message)
 
-        # 3. SET: Assign the item to the new slot
         self.equipped_items[body_part] = item
 
         if add_message:

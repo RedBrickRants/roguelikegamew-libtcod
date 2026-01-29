@@ -62,11 +62,18 @@ def render_map(console: console.Console, game_map:GameMap, camera_x: int = 0, ca
 
     #calcuating the portion of the map to display
     x_portion = min(camera_x + viewport_width, game_map.width)
+    print(f"the x portion is {x_portion}")
+   
     y_portion = min(camera_y +viewport_height, game_map.height)
+    print(f"the y portion is {y_portion}")
 
     camera_width = x_portion - camera_x
+    print(f"the camera width {camera_width} is calculated using {x_portion}- {camera_x}")
     camera_height = y_portion - camera_y
-
+    print(f"the camera height {camera_height} is calculated using {y_portion}- {camera_y}")
+    
+    print(f"Console shape: {console.rgb.shape}")
+    print(f" the cameras with and height are ({camera_width, camera_height})")
     #Using the Console class’s tiles_rgb method, we can quickly render the entire map
     console.rgb[0:camera_width, 0:camera_height] = np.select( 
         condlist=[game_map.visible[camera_x:x_portion, camera_y:y_portion],
