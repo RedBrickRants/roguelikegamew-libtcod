@@ -15,6 +15,18 @@ class Equipment(BaseComponent):
         # We can't access parent.body.parts here yet because parent doesn't exist
         # So we initialize as empty dict and populate it later
         self.equipped_items: Dict[BodyPart, Optional[Item]] = {}
+        self._initialized = False
+    
+    @property
+    def parent(self):
+        return self._parent
+    
+    @parent.setter
+    def parent(self, value):
+        self._parent = value
+        if value and not self._initialized:
+            self.initialize_slots()
+            self._initialized = True
 
     def initialize_slots(self) -> None:
         """Called after parent is set to populate equipment slots from body parts"""

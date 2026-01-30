@@ -11,25 +11,34 @@ if TYPE_CHECKING:
     from entity import Actor, Entity, Item
 
 
+# actions.py
 class Action:
-    ap_cost = 1
-    def __init__(self, entity:Actor)->None:
+    ap_cost = 1  # Default cost
+    
+    def __init__(self, entity: Actor) -> None:
         super().__init__()
         self.entity = entity
+    
     @property
-    def engine(self)-> Engine:
+    def engine(self) -> Engine:
         return self.entity.gamemap.engine
     
+    def get_ap_cost(self) -> int:
+        """Override this to modify A cost"""
+        return self.ap_cost
+    
     def perform(self) -> None:
-
+        """Centralized AP spending - don't override this unless you have a VERY good reason"""
         if hasattr(self.entity, "action_points"):
-            if not self.entity.action_points.spend(self.ap_cost):
+            cost = self.get_ap_cost()
+            if not self.entity.action_points.spend(cost):
                 raise exceptions.Impossible(
-                    f"Not enough AP! Need {self.ap_cost}, have {self.entity.action_points.ap}"
+                    f"Not enough AP! Need {cost}, have {self.entity.action_points.ap}"
                 )
         self.execute()
         
-    def execute (self)-> None:
+    def execute(self) -> None:
+        """Override this to define what the action does"""
         raise NotImplementedError
     
 class PickupAction(Action):
@@ -146,66 +155,66 @@ class BumpAction(ActionWithADirection):
         else:
             return MovementAction(self.entity, self.dx, self.dy).perform()
         
-class MeleeAction(ActionWithADirection):
-    ap_cost = 2
 
-    def perform(self) -> None:
-        """Override perform to handle exhausted attacks"""
-        if hasattr(self.entity, "action_points"):
-            if self.entity.action_points.ap >= self.ap_cost:
-                # Normal attack
-                self.entity.action_points.spend(self.ap_cost)
-                self.exhausted = False  # Track if exhausted
-                self.execute()
-            else:
-                # Exhausted attack
-                if random.random() < 0.3:  # 30% chance to hit
-                    self.entity.action_points.spend(self.entity.action_points.ap)
-                    self.exhausted = True  # Track for damage penalty
-                    self.execute()
-                    
-                else:
-                    self.entity.action_points.spend(self.entity.action_points.ap)
-                    raise exceptions.Impossible(
-                        f"{self.entity.name} swings exhaustedly and misses!"
-                    )
+class MeleeAction(ActionWithADirection):
+    ap_cost = 2  # Normal cost
+
+    def get_ap_cost(self) -> int:
+        """Calculate actual AP cost based on current AP"""
+        current_ap = self.entity.action_points.ap
+        
+        if current_ap >= self.ap_cost:
+            # Normal attack - full cost
+            return self.ap_cost
+        elif current_ap > 0:
+            # Exhausted attack - spend whatever we have
+            return current_ap
         else:
-            self.exhausted = False
-            self.execute()
+            # No AP at all - can't attack
+            return self.ap_cost  # Will fail the spend check in perform()
 
     def execute(self) -> None:
         target = self.target_actor
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
         
-        # Apply damage penalty if exhausted
-        damage = self.entity.fighter.strength - target.fighter.defence
-        if hasattr(self, 'exhausted') and self.exhausted:
-            damage = damage // 2  # Half damage when exhausted!
+        # Check if this was an exhausted attack
+        exhausted = self.entity.action_points.ap == 0  # We just spent all remaining AP
         
-        attack_description = f"{self.entity.name.capitalize()} attacks {target.name}"
-        
-        if self.entity is self.engine.player:
-            attack_colour = colour.player_atk
-        else: 
-            attack_colour = colour.enemy_atk
-        
-        if damage > 0 and hasattr(self, "exhausted") and self.exhausted:
+        # Exhausted attacks have a chance to miss entirely
+        if exhausted and random.random() > 0.3:  # 70% chance to miss when exhausted
             self.engine.message_log.add_message(
-                        f"{self.entity.name} takes an exhausted swing and hits {self.target_actor.name} for {damage} damage!",
-                        colour.player_atk if self.entity is self.engine.player else colour.enemy_atk
-                    )
-            target.fighter.hp -= damage
-        elif damage >0:
-            self.engine.message_log.add_message(
-                f"{attack_description} for {damage} damage.", attack_colour
+                f"{self.entity.name} swings exhaustedly and misses!",
+                colour.player_atk if self.entity is self.engine.player else colour.enemy_atk
             )
+            return
+        
+        # Calculate damage
+        damage = self.entity.fighter.strength - target.fighter.defence
+        
+        # Exhausted attacks do half damage
+        if exhausted:
+            damage = damage // 2
+        
+        attack_colour = colour.player_atk if self.entity is self.engine.player else colour.enemy_atk
+        
+        if damage > 0:
+            if exhausted:
+                self.engine.message_log.add_message(
+                    f"{self.entity.name} takes an exhausted swing and hits {target.name} for {damage} damage!",
+                    attack_colour
+                )
+            else:
+                self.engine.message_log.add_message(
+                    f"{self.entity.name} attacks {target.name} for {damage} damage.",
+                    attack_colour
+                )
             target.fighter.hp -= damage
         else:
             self.engine.message_log.add_message(
-                f"{attack_description} but does no damage", attack_colour
+                f"{self.entity.name} attacks {target.name} but does no damage.",
+                attack_colour
             )
-
 class MovementAction(ActionWithADirection):
 
     def execute (self)-> None:

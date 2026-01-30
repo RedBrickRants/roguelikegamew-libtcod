@@ -53,11 +53,12 @@ def new_game() -> Engine:
     leather_armor.parent = player.inventory
 
     
-
+    player.equipment.initialize_slots()
     player.inventory.items.append(dagger)
     left_arm = player.body.parts[2]  # Or find it properly
+    
     player.equipment.toggle_equip(dagger, left_arm, add_message=False)
-
+    
     player.inventory.items.append(leather_armor)
     torso = player.body.parts[1]
     player.equipment.toggle_equip(leather_armor, torso, add_message=False)
@@ -73,6 +74,8 @@ def new_game() -> Engine:
     print(f"Player AP bonuses: {engine.player.action_points.ap_bonuses}")
     print(f"Player max AP: {engine.player.action_points.max_ap}")
     print(f"Player body parts: {[p.name for p in engine.player.body.parts]}")
+    print(f"Player body modifications: {[m.name for m in engine.player.body.applied_mods]}")
+    print(f"Player initialized slots: {engine.player.equipment._initialized}")
         
     return engine
 
