@@ -16,6 +16,9 @@ class Inventory(BaseComponent):
         """
         Removes an item from the inventory and restores it to the game map, at the player's current location.
         """
+        #print(f"attempting to remove{item}")
         self.items.remove(item)
+        #if item in self.items:
+           # print(f"failed to remove {item}")
         item.place(self.parent.x, self.parent.y, self.gamemap)
         self.engine.message_log.add_message(f"You dropped the {item.name} on the floor")

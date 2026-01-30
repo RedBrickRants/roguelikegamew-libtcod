@@ -11,7 +11,7 @@ from message_log import MessageLog
 import render_functions
 import exceptions
 import lzma
-import pickle
+import dill
 import constants as const
 
 if TYPE_CHECKING:
@@ -75,7 +75,7 @@ class Engine:
 
           self.update_camera(map_viewport_width= const.MAP_VIEWPORT_WIDTH, map_viewport_height=const.MAP_VIEWPORT_HEIGHT)
           # Map 
-          print("attempting to render map")
+          #print("attempting to render map")
           render_functions.render_map(
                self.map_console, 
                self.game_map, 
@@ -84,7 +84,7 @@ class Engine:
                viewport_width = const.MAP_VIEWPORT_WIDTH, 
                viewport_height = const.MAP_VIEWPORT_HEIGHT
                )
-          print("map rendered")
+          #print("map rendered")
           #Entities
           render_functions.render_entities(
                self.map_console, 
@@ -128,6 +128,6 @@ class Engine:
           render_functions.render_names_at_mouse(console, 0, 60, self)  # Was 43, now 60
      def save_as(self, filename: str)-> None:
           """Save this Engine instance as a compressed file."""
-          save_data = lzma.compress(pickle.dumps(self))
+          save_data = lzma.compress(dill.dumps(self))
           with open(filename, "wb") as f:
             f.write(save_data)

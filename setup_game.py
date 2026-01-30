@@ -9,7 +9,7 @@ from components.body_modification import ExtraBrain
 import tcod
 import copy
 import lzma
-import pickle
+import dill
 import traceback
 import colour
 import entity_factories
@@ -69,6 +69,7 @@ def new_game() -> Engine:
 
    
     print(f"Player Stat bonuses: {engine.player.body.stat_bonuses}")
+    print(f"Player equipped items: {[e.name for e in engine.player.equipment.equipped_items]}")
     print(f"Player AP bonuses: {engine.player.action_points.ap_bonuses}")
     print(f"Player max AP: {engine.player.action_points.max_ap}")
     print(f"Player body parts: {[p.name for p in engine.player.body.parts]}")
@@ -78,7 +79,7 @@ def new_game() -> Engine:
 def load_game(filename: str) -> Engine:
     """Load an Engine instance from a file."""
     with open(filename, "rb") as f:
-        engine = pickle.loads(lzma.decompress(f.read()))
+        engine = dill.loads(lzma.decompress(f.read()))
     assert isinstance(engine, Engine)
     return engine
 

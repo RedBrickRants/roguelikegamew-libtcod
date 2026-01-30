@@ -79,7 +79,8 @@ class DropItem(ItemAction):
     ap_cost = 0
     def execute(self)-> None:
         if self.entity.equipment.item_is_equipped(self.item):
-            self.entity.equipment.toggle_equip(self.item)
+            self.entity.equipment.toggle_equip(self.item,self.item.equippable.current_slot)
+        self.entity.inventory.drop(self.item)
 
 class EquipAction(Action):
     ap_cost = 0

@@ -82,6 +82,21 @@ class Equipment(BaseComponent):
         Equips an item to a specific body part. 
         If the item is already equipped elsewhere, it is moved.
         """
+        old_slot = item.equippable.current_slot
+        if old_slot is not None:
+            if old_slot is body_part:
+                return
+            self.equipped_items[old_slot] = None
+        if self.equipped_items.get(body_part) is not None:
+            old_item = self.equipped_items[body_part]
+            if old_item:
+                old_item.equippable.current_slot = None
+        self.equipped_items[body_part] = item
+        item.equippable.current_slot = body_part
+        if add_message:
+            self.equip_message(item.name, body_part.name)
+        
+        """self.unequip_from_part(body_part, add_message=add_message)
         for slot, equipped_item in self.equipped_items.items():
             if equipped_item is item:  
                 self.equipped_items[slot] = None
@@ -94,12 +109,13 @@ class Equipment(BaseComponent):
         self.equipped_items[body_part] = item
 
         if add_message:
-            self.equip_message(item.name, body_part.name)
+            self.equip_message(item.name, body_part.name)"""
 
     def unequip_from_part(self, body_part: BodyPart, add_message: bool = True) -> None:
         """Unequip item from a specific body part"""
         current_item = self.equipped_items.get(body_part)
-        
+        if current_item:
+            current_item.equippable.current_slot = None
         if current_item is None:
             return
 
