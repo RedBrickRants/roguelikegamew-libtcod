@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union
 from actions import Action, EscapeAction, BumpAction, WaitAction, PickupAction
-
+from equipment_types import ModificationType, ModificationSlot
 import tcod
 import colour
 import exceptions
@@ -14,6 +14,10 @@ if TYPE_CHECKING:
     from entity import Item, Actor
     from components.body import Body, BodyPart
     from components.body_modification import Modification
+    from components.consumable import Consumable
+    from components.equippable import Equippable
+    from components.equipment import Equipment
+    
 
 MOVE_KEYS = {
     # Arrow keys.
@@ -729,7 +733,7 @@ class ModificationApplicationHandler(AskUserEventHandler):
         y = 0
         
         # Calculate menu size based on mod type
-        if mod_instance.mod_type == "intrinsic":
+        if mod_instance.mod_type == ModificationType.INTRINSIC:
             height = 5  # Smaller menu for intrinsic
             width = 40
         else:
@@ -755,7 +759,7 @@ class ModificationApplicationHandler(AskUserEventHandler):
             x=x + 1, y=y + 2,
             string=f"Type: {mod_instance.mod_type}"
         )
-        if mod_instance.mod_type == "intrinsic":
+        if mod_instance.mod_type == ModificationType.INTRINSIC:
             # Intrinsic mods have no choice - just confirm
             console.print(
                 x=x + 1, y=y + 3,
@@ -790,7 +794,7 @@ class ModificationApplicationHandler(AskUserEventHandler):
         key = event.sym
         
         mod_instance = self.modification_class(level=self.initial_level)
-        if mod_instance.mod_type == "intrinsic":
+        if mod_instance.mod_type == ModificationType.INTRINSIC:
             if key == tcod.event.KeySym.a:
                 return self.apply_intrinsic_mod()
         else:
@@ -835,7 +839,7 @@ class ModificationApplicationHandler(AskUserEventHandler):
         new_mod = self.modification_class(level=self.initial_level)
         
         # Determine which slot based on mod type
-        if new_mod.mod_type == "internal":
+        if new_mod.mod_type == ModificationType.INTERNAL:
             if body_part.internal_modification:
                 self.engine.message_log.add_message(
                     f"The {body_part.name} already has an internal modification!",
@@ -845,7 +849,7 @@ class ModificationApplicationHandler(AskUserEventHandler):
             body_part.internal_modification = new_mod
             new_mod.parent = body_part
             
-        elif new_mod.mod_type == "external":
+        elif new_mod.mod_type == ModificationType.EXTERNAL:
             if body_part.external_modification:
                 self.engine.message_log.add_message(
                     f"The {body_part.name} already has an external modification!",

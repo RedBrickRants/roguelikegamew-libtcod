@@ -10,3 +10,15 @@ class EquipmentCategory(Enum):
     TORSO = auto()
     HEAD=auto()
     LEG = auto()
+
+class ModificationType(Enum):
+    INTRINSIC = auto()
+    INTERNAL = auto()
+    EXTERNAL = auto()
+
+class ModificationSlot(Enum):
+    BODY = auto()
+    ARM = auto()
+    TORSO = auto()
+    HEAD=auto()
+    LEG = auto()

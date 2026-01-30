@@ -27,13 +27,23 @@ class Consumable(BaseComponent):
         `action` is the context for this activation.
         """
         raise NotImplementedError()
-    
     def consume(self)-> None:
         """Removes the consumed item from its current containing inventory"""
         entity = self.parent
         inventory = entity.parent
         if isinstance(inventory, components.inventory.Inventory):
             inventory.items.remove(entity)
+
+class MuscleBoostConsumabe(Consumable):
+    def __init__(self, amount: int):
+        self.amount = amount
+
+    def activate (self, action:actions.Action)->None:
+        consumer = action.entity
+        consumer.fighter.strength += self.amount
+        self.engine.message_log.add_message(
+            f"You feel your muscles expand by {self.amount}"
+        )
 
 class ConfusionConsumable(Consumable):
     def __init__(self, number_of_turns: int):

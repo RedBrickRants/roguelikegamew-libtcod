@@ -2,22 +2,36 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from components.body import Body, BodyPart
+from equipment_types import ModificationType, ModificationSlot
 
+if TYPE_CHECKING:
+    pass
 
 class Modification:
     parent: BodyPart
     
-    def __init__(self, name: str, description: str, mod_type: str, level: int = 1):
+    def __init__(
+            self, 
+            name: str, 
+            description: str, 
+            mod_type: ModificationType, 
+            mod_slot:ModificationSlot, 
+            level: int = 1
+        ):
         self.name = name
         self.description = description
         self.mod_type = mod_type
+        self.mod_slot = mod_slot
         self.parent = None
         self.level = level  
         self.max_level = 5 
 
     @property
-    def get_mod_location(self) -> str:
+    def get_mod_type(self):
         return self.mod_type
+    @property
+    def get_mod_slot(self):
+        return self.mod_slot
     
     def can_level_up(self) -> bool:
         """Check if this mod can level up"""
@@ -63,7 +77,8 @@ class ExtraBrain(Modification):
         super().__init__(
             "Xtra Brain", 
             "Develop an advanced Growth which allows for faster though processing",
-            "internal",
+            ModificationType.INTERNAL,
+            ModificationSlot.HEAD,
             level
         )
     
@@ -105,7 +120,8 @@ class MuscleMAX(Modification):
         super().__init__(
             "MslMAX", 
             "Increase size and density of a user's extremity", 
-            "internal",
+            ModificationType.EXTERNAL,
+            ModificationSlot.ARM,
             level
             )
     def get_stat_bonuses(self):
@@ -123,7 +139,9 @@ class NumbDown(Modification):
         super().__init__(
             "Induced RPD",
             "Extreme Dosage off an in development Multi purpose painkiller caused induced encephalopathy",
-            "intrinsic",   
+            ModificationType.INTRINSIC,
+            ModificationSlot.BODY,
+            level   
         )            
     def get_stat_bonuses(self):
     

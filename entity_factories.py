@@ -10,6 +10,7 @@ from entity import Actor, Item
 import components.body_templates
 import random
 from components.body_modification import ExtraBrain, NumbDown, MuscleMAX
+from equipment_types import ModificationType
 
 def apply_random_modification(actor: Actor, floor_level: int = 0) -> None:
     """
@@ -57,15 +58,15 @@ def apply_random_modification(actor: Actor, floor_level: int = 0) -> None:
     body_part = random.choice(actor.body.parts)
     
     # Apply based on type
-    if new_mod.mod_type == "internal":
+    if new_mod.mod_type == ModificationType.INTERNAL:
         if body_part.internal_modification is None:
             body_part.internal_modification = new_mod
             new_mod.parent = body_part
-    elif new_mod.mod_type == "external":
+    elif new_mod.mod_type == ModificationType.EXTERNAL:
         if body_part.external_modification is None:
             body_part.external_modification = new_mod
             new_mod.parent = body_part
-    elif new_mod.mod_type == "intrinsic":
+    elif new_mod.mod_type == ModificationType.INTRINSIC:
         if actor.body.intrinsic_modification is None:
             actor.body.intrinsic_modification = new_mod
             new_mod.parent = body_part
@@ -112,9 +113,17 @@ troll = Actor(
 health_potion = Item(
     glyph="!",
     colour=(127, 0, 255),
-    name="Health Potion",
+    name="Morphine Syringe",
     consumable=consumable.HealingConsumable(amount=4),
 )
+
+strength_potion = Item(
+    glyph ="!",
+    colour=(255, 135, 50),
+    name="Strength Serum",
+    consumable=consumable.MuscleBoostConsumabe(amount=2),
+)
+
 lightning_scroll = Item(
     glyph="~",
     colour=(255, 255, 0),
@@ -134,6 +143,10 @@ fireball_scroll = Item(
     name="Fireball Scroll",
     consumable=consumable.FireballDamageConsumable(damage=12, radius=3),
 )
+
+
+
+# Equipment Items
 dagger = Item(
     glyph="/", colour=(0, 191, 255), name="Dagger", equippable=equippable.Dagger(),
 )
