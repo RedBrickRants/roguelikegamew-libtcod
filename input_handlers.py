@@ -70,7 +70,6 @@ CONFIRM_KEYS = {
 }
 ActionOrHandler = Union[Action, "BaseEventHandler"]
 """An event handler return value which can trigger an action or switch active handlers.
-
 If a handler is returned then it will become the active handler for future events.
 If an action is returned it will be attempted and if it's valid then
 MainGameEventHandler will become the active handler."""
@@ -409,7 +408,6 @@ class InventoryActivateHandler(InventoryEventHandler):
         else:
             return None
 
-
 class InventoryDropHandler(InventoryEventHandler):
     """Handle dropping an inventory item."""
 
@@ -495,8 +493,6 @@ class EquipmentSelectionHandler(AskUserEventHandler):
         
         return super().ev_keydown(event)
 
-
-    
 class SelectIndexHandler(AskUserEventHandler):
     """Handles asking the user for an index on the map"""
     def __init__(self, engine: Engine):
@@ -635,7 +631,21 @@ class MainGameEventHandler(EventHandler):
         elif key == tcod.event.KeySym.v:
             return LogHistoryViewer(self.engine)
         elif key == tcod.event.KeySym.g:
-            action = PickupAction(player)
+            # Check how many items are at player location
+            items_here = [
+                item for item in self.engine.game_map.items
+                if item.x == player.x and item.y == player.y
+            ]
+            
+            if len(items_here) == 0:
+                self.engine.message_log.add_message("There's nothing here to pick up.", colour.impossible)
+                return None
+            elif len(items_here) == 1:
+                # Only one item, pick it up directly
+                action = PickupAction(player)
+            else:
+                # Multiple items, show menu
+                return PickupMenuHandler(self.engine, items_here)
         elif key == tcod.event.KeySym.i:
             return InventoryActivateHandler(self.engine)
         elif key == tcod.event.KeySym.d:
@@ -951,3 +961,95 @@ class EnemyInfoHandler(AskUserEventHandler):
 
         ##for i, line in enumerate():
           #  pass
+
+class PickupMenuHandler(AskUserEventHandler):
+    """Handle picking up items when multiple are on one tile."""
+
+    TITLE = "Pick up which item?"
+
+    def __init__(self, engine: Engine, items_at_location: list):
+        super().__init__(engine)
+        self.items_at_location = items_at_location
+
+    def on_render(self, console: tcod.console.Console) -> None:
+        """Render the pickup menu."""
+        super().on_render(console)
+        
+        number_of_items = len(self.items_at_location)
+        height = number_of_items + 3  # +3 for title, "all" option, and padding
+
+        if height <= 4:
+            height = 4
+        
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+        width = len(self.TITLE) + 4
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0)
+        )
+
+        # Show items
+        for i, item in enumerate(self.items_at_location):
+            item_key = chr(ord("a") + i)
+            console.print(x + 1, y + i + 1, f"({item_key}) {item.name}")
+        
+        # "Pick up all" option
+        all_key = chr(ord("a") + len(self.items_at_location))
+        console.print(x + 1, y + len(self.items_at_location) + 1, f"({all_key}) Pick up all")
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        player = self.engine.player
+        key = event.sym
+        index = key - tcod.event.KeySym.a
+
+        if 0 <= index < len(self.items_at_location):
+            # Pick up single item
+            selected_item = self.items_at_location[index]
+            action = actions.PickupSpecificItemAction(player, selected_item)
+            
+            # Execute the action directly
+            try:
+                action.perform()
+            except exceptions.Impossible as exc:
+                self.engine.message_log.add_message(exc.args[0], colour.impossible)
+                return self  # Stay in menu on error
+            
+            # Check if there are still items on the ground
+            items_remaining = [
+                item for item in self.engine.game_map.items
+                if item.x == player.x and item.y == player.y
+            ]
+            
+            if items_remaining:
+                # Update the menu with remaining items
+                return PickupMenuHandler(self.engine, items_remaining)
+            else:
+                # No items left, return to game
+                return MainGameEventHandler(self.engine)
+                
+        elif index == len(self.items_at_location):
+            # Pick up all
+            action = actions.PickupAllAction(player, self.items_at_location)
+            try:
+                action.perform()
+            except exceptions.Impossible as exc:
+                self.engine.message_log.add_message(exc.args[0], colour.impossible)
+                return self
+            
+            # After picking up all, return to game
+            return MainGameEventHandler(self.engine)
+        
+        return super().ev_keydown(event)
+

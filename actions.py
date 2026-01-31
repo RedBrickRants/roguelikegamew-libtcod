@@ -227,3 +227,52 @@ class MovementAction(ActionWithADirection):
             raise exceptions.Impossible("That way is blocked.")
         self.entity.move(self.dx, self.dy)
 
+class PickupSpecificItemAction(Action):
+    """Pick up a specific item."""
+    ap_cost = 0
+    
+    def __init__(self, entity: Actor, item: Item):
+        super().__init__(entity)
+        self.item = item
+    
+    def execute(self) -> None:
+        inventory = self.entity.inventory
+        
+        if len(inventory.items) >= inventory.capacity:
+            raise exceptions.Impossible("Your inventory is full")
+        
+        self.engine.game_map.entities.remove(self.item)
+        self.item.parent = self.entity.inventory
+        inventory.items.append(self.item)
+        
+        self.engine.message_log.add_message(f"You picked up the {self.item.name}!")
+
+
+class PickupAllAction(Action):
+    """Pick up all items at a location."""
+    ap_cost = 0
+    
+    def __init__(self, entity: Actor, items: list):
+        super().__init__(entity)
+        self.items = items
+    
+    def execute(self) -> None:
+        inventory = self.entity.inventory
+        picked_up = []
+        
+        for item in self.items:
+            if len(inventory.items) >= inventory.capacity:
+                self.engine.message_log.add_message(
+                    f"Your inventory is full! Picked up {len(picked_up)} items.",
+                    colour.impossible
+                )
+                return
+            
+            self.engine.game_map.entities.remove(item)
+            item.parent = self.entity.inventory
+            inventory.items.append(item)
+            picked_up.append(item.name)
+        
+        self.engine.message_log.add_message(
+            f"You picked up {len(picked_up)} items!"
+        )
