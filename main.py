@@ -1,4 +1,13 @@
 
+import os
+import sys
+
+# This forces Python to look for DLLs in the pygame-ce folder first
+if sys.platform == "win32":
+    import pygame
+    pygame_dir = os.path.dirname(pygame.__file__)
+    os.add_dll_directory(pygame_dir)
+
 import traceback
 import tcod
 import colour

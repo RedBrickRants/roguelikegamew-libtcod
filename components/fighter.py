@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from components.base_component import BaseComponent
 from render_order import RenderOrder
+from soundmanager import SoundManager
 
 import colour
 if TYPE_CHECKING:
@@ -64,6 +65,12 @@ class Fighter(BaseComponent):
         return amount_recovered
     
     def take_damage(self, amount: int)-> None:
+        if Actor in self.parent.components:
+            sound_manager = SoundManager()
+            if self.parent is self.engine.player:
+                sound_manager.play_sound("player_hurt")
+            else:
+                sound_manager.play_sound("soft_enemy_hurt")
         self.hp -=amount
 
     def die(self)-> None:
