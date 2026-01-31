@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 
 class Modification:
     parent: BodyPart
-    
     def __init__(
             self, 
             name: str, 
