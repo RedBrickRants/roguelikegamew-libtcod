@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Dict, Iterator, List, Tuple, TYPE_CHECKING
 import entity_factories
+from entity_mod_management import apply_random_modification
 from entity import Actor
 from game_map import GameMap
 import tile_types
@@ -135,7 +136,7 @@ def place_entities(room: RectRoom, station: GameMap, floor_number: int,) -> None
         if not any(entity.x ==x and entity.y == y for entity in station.entities):
             spawned = entity.spawn(station, x, y)
             if isinstance(spawned, Actor) and spawned.ai:
-                entity_factories.apply_random_modification(spawned, floor_number)
+                apply_random_modification(spawned, floor_number)
                 
 
 #create L shaped tunels between these two points
