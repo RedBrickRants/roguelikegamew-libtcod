@@ -34,7 +34,7 @@ class SoundManager:
             else:
                 print(f"Note: {full_path} not found, sound '{key}' will be silent.")
 
-    def play_sound(self, name: str):
+    def play(self, name: str):
         """Plays a sound by key name."""
         sound = self.sounds.get(name)
         if sound:

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional, Tuple, TYPE_CHECKING
 from components.body import BodyPart
 from soundmanager import SoundManager
+
 import colour
 import exceptions
 import random
@@ -188,7 +189,7 @@ class MeleeAction(ActionWithADirection):
                 f"{self.entity.name} swings exhaustedly and misses!",
                 colour.player_atk if self.entity is self.engine.player else colour.enemy_atk
             )
-            sound_manager.play_sound("miss")
+            sound_manager.play("miss")
             return
         
         # Calculate damage
@@ -217,12 +218,12 @@ class MeleeAction(ActionWithADirection):
                 f"{self.entity.name} attacks {target.name} but does no damage.",
                 attack_colour
             )
-            sound_manager.play_sound("miss")
+            sound_manager.play("miss")
         # Play appropriate sound
         if self.entity is self.engine.player:
-            sound_manager.play_sound("player_hit")
+            sound_manager.play("player_hit")
         else:
-            sound_manager.play_sound("soft_enemy_hit")
+            sound_manager.play("soft_enemy_hit")
         
 class MovementAction(ActionWithADirection):
 
@@ -235,7 +236,10 @@ class MovementAction(ActionWithADirection):
         if self.engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
             raise exceptions.Impossible("That way is blocked.")
         self.entity.move(self.dx, self.dy)
-        sound_manager.play_sound("move")
+        if self.entity is self.engine.player:
+            sound_manager.play("move")
+        elif self.engine.game_map.visible[self.entity.x, self.entity.y]:
+            sound_manager.play("move")
 
 class PickupSpecificItemAction(Action):
     """Pick up a specific item."""

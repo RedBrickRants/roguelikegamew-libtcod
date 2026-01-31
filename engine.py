@@ -8,6 +8,8 @@ from tcod.map import compute_fov
 
 
 from message_log import MessageLog
+from soundmanager import SoundManager
+import time
 import render_functions
 import exceptions
 import lzma
@@ -34,17 +36,49 @@ class Engine:
           self.inventory_console = Console(const.INVENTORY_PANEL_WIDTH, const.INVENTORY_PANEL_HEIGHT, order="F")
           self.log_console = Console(const.LOG_PANEL_WIDTH, const.LOG_PANEL_HEIGHT, order="F")
 
-     def handle_enemy_turns(self)-> None:
-          for entity in set(self.game_map.actors)- {self.player}:
-               if entity.ai:
-                    while entity.action_points.can_act():
-                         try:
-                              action = entity.ai.execute()
-                              if action is None:
-                                   break
-                              action.perform()
-                         except exceptions.Impossible:
-                              break 
+          self.context = None  
+          self.root_console = None
+     
+     def __getstate__(self) -> dict:
+        """Tell dill what to save by removing non-pickleable references."""
+        state = self.__dict__.copy() # Copy the engine's data
+        
+        # Remove the system-heavy objects that cause the crash
+        if "context" in state:
+            del state["context"]
+        if "root_console" in state:
+            del state["root_console"]
+        if "sound_manager" in state:
+            del state["sound_manager"]
+            
+        return state
+
+     def __setstate__(self, state: dict) -> None:
+        """Restore the engine and restart the sound manager."""
+        self.__dict__.update(state)
+        
+        # These will be re-assigned by your main loop in main.py
+        self.context = None
+        self.root_console = None
+        
+        # Re-initialize the sound manager so audio works on load
+        self.sound_manager = SoundManager()
+
+
+     def handle_enemy_turns(self) -> None:
+        for entity in set(self.game_map.actors) - {self.player}:
+            if entity.ai:
+                while entity.action_points.can_act():
+                    action = entity.ai.execute()
+                    if action is None: break
+                    action.perform() 
+
+                    # Sequential Visuals & Sound spacing
+                    if self.context and self.root_console:
+                        if self.game_map.visible[entity.x, entity.y]:
+                            self.render(self.root_console)
+                            self.context.present(self.root_console)
+                            time.sleep(0.05)
           
 
      def update_fov(self) -> None:

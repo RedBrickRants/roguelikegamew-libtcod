@@ -48,6 +48,10 @@ def main() -> None:
         
         try:
             while True:
+                if hasattr(handler, "engine"):
+                    handler.engine.context = context
+                    handler.engine.root_console = root_console
+
                 root_console.clear()
                 handler.on_render(console=root_console)
                 context.present(root_console)
