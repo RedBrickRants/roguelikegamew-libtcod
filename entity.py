@@ -102,6 +102,8 @@ class Actor(Entity):
         )
 
         self.ai: Optional[BaseAI] = ai_cls(self)
+        self.body = body
+        self.body.parent = self
         self.equipment: Equipment = equipment
         self.equipment.parent = self
         self.fighter = fighter
@@ -112,8 +114,7 @@ class Actor(Entity):
         self.level.parent = self
         self.action_points = action_points
         self.action_points.parent = self
-        self.body = body
-        self.body.parent = self
+        
         
     @property
     def is_alive(self)->bool:

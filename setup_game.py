@@ -53,7 +53,6 @@ def new_game() -> Engine:
     leather_armor.parent = player.inventory
 
     
-    player.equipment.initialize_slots()
     player.inventory.items.append(dagger)
     left_arm = player.body.parts[2]  # Or find it properly
     
