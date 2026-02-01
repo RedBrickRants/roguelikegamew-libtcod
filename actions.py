@@ -103,8 +103,47 @@ class EquipAction(Action):
         self.body_part = body_part
 
     def execute(self) -> None:
-        self.entity.equipment.toggle_equip(self.item, self.body_part)
-
+        slots_needed = self.item.equippable.slot_amount
+        if slots_needed == 1:
+            # Check what's currently in this slot
+            current_item = self.entity.equipment.equipped_items.get(self.body_part)
+            
+            if current_item and current_item.equippable.slot_amount > 1:
+                # Multi-slot item is equipped, need to unequip from all matching parts
+                matching_parts = [
+                    part for part in self.entity.body.parts 
+                    if part.part_type == self.body_part.part_type
+                ]
+                
+                for part in matching_parts:
+                    if self.entity.equipment.equipped_items.get(part) == current_item:
+                        self.entity.equipment.unequip_from_part(part, add_message=False)
+                
+                self.engine.message_log.add_message(
+                    f"You unequip the {current_item.name}."
+                )
+            
+            # Now equip the new item normally
+            self.entity.equipment.toggle_equip(self.item, self.body_part)
+        elif slots_needed > 1:
+            matching_parts = [
+            part for part in self.entity.body.parts 
+            if part.part_type == self.body_part.part_type
+        ]
+            if len(matching_parts) < 2:
+                raise exceptions.Impossible(f"Not enough {self.body_part.part_type.name} parts to equip {self.item.name}.")
+            
+            blocked_parts = [part for part in matching_parts if self.entity.equipment.equipped_items.get(part) is not None]
+            if blocked_parts:
+                for part in blocked_parts:
+                    self.entity.equipment.unequip_from_part(part, add_message=False)
+            
+            for part in matching_parts:
+                self.entity.equipment.equip_to_part(part, self.item, add_message=False)
+            
+            self.engine.message_log.add_message(
+                f"You equip the {self.item.name} with both hands."
+            )
         
 class WaitAction(Action):
     def execute(self)-> None:
@@ -359,7 +398,7 @@ class RangedAttackAction(Action):
 
         self.target_xy = target_xy
         self.weapon = weapon
-
+        ap_cost = weapon.use_ap_cost
 
     def get_targets_in_line(self) -> List[Actor]:
             """Get all actors in the line of fire, respecting pierce"""
@@ -461,11 +500,11 @@ class RangedAttackAction(Action):
 
 class ReloadAction(Action):
     """Reload a ranged weapon"""
-    ap_cost = 1
     
     def __init__(self, entity: Actor, weapon: RangedEquippable):
         super().__init__(entity)
         self.weapon = weapon
+        ap_cost = self.weapon.reload_ap_cost
     
     def execute(self) -> None:
         """Reload the weapon"""

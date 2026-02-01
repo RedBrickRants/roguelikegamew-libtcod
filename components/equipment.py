@@ -103,6 +103,11 @@ class Equipment(BaseComponent):
             old_item = self.equipped_items[body_part]
             if old_item:
                 old_item.equippable.current_slot = None
+
+                if old_item.equippable.slot_amount > 1:
+                    for slot, equipped in self.equipped_items.items():
+                        if equipped is old_item:
+                            self.equipped_items[slot] = None
         self.equipped_items[body_part] = item
         item.equippable.current_slot = body_part
         if add_message:

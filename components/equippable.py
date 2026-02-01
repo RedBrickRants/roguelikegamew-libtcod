@@ -18,11 +18,16 @@ class Equippable(BaseComponent):
         equip_category: EquipmentCategory,
         strength_bonus: int = 0,
         defence_bonus: int = 0,
+        use_ap_cost: int = 0,
+        slot_amount: int = 1,
     ):
         self.equipment_type = equipment_type
         self.equip_category = equip_category
         self.strength_bonus = strength_bonus
         self.defence_bonus = defence_bonus
+        self.use_ap_cost = use_ap_cost
+        self.slot_amount = slot_amount
+        
 
         self._current_slot_ref: Optional[weakref.ReferenceType[BodyPart]]= None
 
@@ -47,6 +52,9 @@ class RangedEquippable(Equippable):
         self,
         equipment_type: EquipmentType,
         equip_category: EquipmentCategory,
+        slot_amount: int = 1,
+        use_ap_cost: int = 1,
+        reload_ap_cost: int = 1,
         strength_bonus: int = 0,
         defence_bonus: int = 0,
         damage: int = 0,
@@ -60,8 +68,12 @@ class RangedEquippable(Equippable):
             equipment_type,
             equip_category,
             strength_bonus,
-            defence_bonus
+            defence_bonus,
+            use_ap_cost,
+            slot_amount
         )
+ 
+        self.reload_ap_cost= reload_ap_cost
         self.damage = damage
         self.pierce = pierce
         self.max_range = max_range
@@ -127,6 +139,9 @@ class Pistol(RangedEquippable):
         super().__init__(
             equipment_type=EquipmentType.RANGEDWEAPON,
             equip_category=EquipmentCategory.ARM,
+            use_ap_cost=1,
+            reload_ap_cost=2,
+            slot_amount=1,
             damage=8,
             pierce=0,
             max_range=8,
@@ -140,6 +155,9 @@ class Rifle(RangedEquippable):
         super().__init__(
             equipment_type=EquipmentType.RANGEDWEAPON,
             equip_category=EquipmentCategory.ARM,
+            use_ap_cost=1,
+            reload_ap_cost=2,
+            slot_amount=2, 
             damage=12,
             pierce=2,
             max_range=15,
@@ -153,6 +171,9 @@ class LaserPistol(RangedEquippable):
         super().__init__(
             equipment_type=EquipmentType.RANGEDWEAPON,
             equip_category=EquipmentCategory.ARM,
+            use_ap_cost=1,
+            reload_ap_cost=2,
+            slot_amount=1,
             damage=10,
             pierce=1,
             max_range=10,
@@ -165,6 +186,9 @@ class PlasmaRifle(RangedEquippable):
         super().__init__(
             equipment_type=EquipmentType.RANGEDWEAPON,
             equip_category=EquipmentCategory.ARM,
+            use_ap_cost=2,
+            reload_ap_cost=2,
+            slot_amount=2,
             damage=15,
             pierce=3,
             max_range=12,

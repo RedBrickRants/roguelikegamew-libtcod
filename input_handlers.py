@@ -676,7 +676,7 @@ class MainGameEventHandler(EventHandler):
                     colour.impossible
                 )
                 return None
-        elif key == tcod.event.KeySym.l:
+        elif key == tcod.event.KeySym.s:
             return LookHandler(self.engine)
         elif key == tcod.event.KeySym.o:
             return DoorDirectionHandler(self.engine)
@@ -1134,8 +1134,8 @@ class GunTargetingHandler(SelectIndexHandler):
                 elif not self.engine.game_map.tiles["transparent"][x, y]:
                     line_color = colour.invalid  # Blocked
                 else:
-                    line_color = colour.needs_target  # Valid
-                
+                    line_color = colour.needs_target 
+
                 console.rgb["bg"][screen_x, screen_y] = line_color
         
         # Display info
