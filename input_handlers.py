@@ -1,8 +1,8 @@
 #input_handlers.py
 from __future__ import annotations
 from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union
-from actions import Action, EscapeAction, BumpAction, WaitAction, PickupAction
-from equipment_types import ModificationType, ModificationSlot
+from actions import Action, EscapeAction, BumpAction, ReloadAction, WaitAction, PickupAction,RangedAttackAction
+from equipment_types import EquipmentType, ModificationType, ModificationSlot
 import tcod
 import colour
 import exceptions
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from components.body import Body, BodyPart
     from components.body_modification import Modification
     from components.consumable import Consumable
-    from components.equippable import Equippable
+    from components.equippable import Equippable, RangedEquippable
     from components.equipment import Equipment
     
 
@@ -654,6 +654,30 @@ class MainGameEventHandler(EventHandler):
             return CharacterScreenEventHandler(self.engine)
         elif key == tcod.event.KeySym.SLASH:
             return EnemyLookHandler(self.engine)
+        
+        elif key == tcod.event.KeySym.f:  
+            gun = get_equipped_gun(player)
+            if gun:
+                return GunTargetingHandler(self.engine, gun)
+            else:
+                self.engine.message_log.add_message(
+                    "You don't have a ranged weapon equipped!", 
+                    colour.impossible
+                )
+                return None
+
+        elif key == tcod.event.KeySym.r:  
+            gun = get_equipped_gun(player)
+            if gun:
+                action = ReloadAction(player, gun)
+            else:
+                self.engine.message_log.add_message(
+                    "You don't have a ranged weapon equipped!", 
+                    colour.impossible
+                )
+                return None
+        elif key == tcod.event.KeySym.l:
+            return LookHandler(self.engine)
         elif key == tcod.event.KeySym.o:
             return DoorDirectionHandler(self.engine)
 
@@ -1075,3 +1099,70 @@ class DoorDirectionHandler(AskUserEventHandler):
         # ESC or any other key cancels
         return super().ev_keydown(event)
     
+class GunTargetingHandler(SelectIndexHandler):
+    """Select a target for gun attacks - shows line of fire"""
+    
+    def __init__(self, engine: Engine, weapon: RangedEquippable):
+        super().__init__(engine)
+        self.weapon = weapon
+    
+    def on_render(self, console: tcod.console.Console) -> None:
+        """Highlight the targeting line and show range"""
+        super().on_render(console)
+        
+        world_x, world_y = self.engine.mouse_location
+        player_x, player_y = self.engine.player.x, self.engine.player.y
+        
+        # Calculate distance
+        distance = max(abs(world_x - player_x), abs(world_y - player_y))
+        
+        # Draw line of fire
+        line = tcod.los.bresenham((player_x, player_y), (world_x, world_y)).tolist()
+        
+        for x, y in line:
+            if (x, y) == (player_x, player_y):
+                continue  # Skip player position
+            
+            screen_x = x - self.engine.camera_x
+            screen_y = y - self.engine.camera_y
+            
+            # Check if in viewport
+            if 0 <= screen_x < console.width and 0 <= screen_y < console.height:
+                # Color based on range and line of sight
+                if distance > self.weapon.max_range:
+                    line_color = colour.impossible  # Out of range
+                elif not self.engine.game_map.tiles["transparent"][x, y]:
+                    line_color = colour.invalid  # Blocked
+                else:
+                    line_color = colour.needs_target  # Valid
+                
+                console.rgb["bg"][screen_x, screen_y] = line_color
+        
+        # Display info
+        info_y = 0
+        console.print(
+            0, info_y,
+            f"Ammo: {self.weapon.current_ammo}/{self.weapon.max_ammo}  "
+            f"Range: {distance}/{self.weapon.max_range}  "
+            f"DMG: {self.weapon.damage}  Pierce: {self.weapon.pierce}",
+            fg=colour.white
+        )
+    
+    def on_index_selected(self, x: int, y: int) -> Optional[Action]:
+        """Fire at the selected location"""
+        return RangedAttackAction(self.engine.player, (x, y), self.weapon)
+
+
+# Add this function to help detect equipped guns in MainGameEventHandler
+def get_equipped_gun(actor: Actor) -> Optional[RangedEquippable]:
+    """Check if actor has a ranged weapon equipped"""
+
+    
+    if not hasattr(actor, 'equipment'):
+        return None
+    
+    for item in actor.equipment.equipped_items.values():
+        if item and item.equippable.equipment_type == EquipmentType.RANGEDWEAPON:
+            return item.equippable
+    
+    return None

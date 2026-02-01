@@ -1,13 +1,14 @@
 #actions.py
 from __future__ import annotations
-from typing import Optional, Tuple, TYPE_CHECKING
+from typing import List, Optional, Tuple, TYPE_CHECKING
 from components.body import BodyPart
 from soundmanager import SoundManager
-
+from components.equippable import RangedEquippable
 import colour
 import exceptions
 import random
 import tile_types
+import tcod
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -351,3 +352,131 @@ class ToggleDoorAction(ActionWithADirection):
             self.engine.message_log.add_message("You open the door.")
         
         self.engine.update_fov()
+
+class RangedAttackAction(Action):
+    def __init__(self, entity: Actor, target_xy: Tuple[int, int], weapon: RangedEquippable):
+        super().__init__(entity)
+
+        self.target_xy = target_xy
+        self.weapon = weapon
+
+
+    def get_targets_in_line(self) -> List[Actor]:
+            """Get all actors in the line of fire, respecting pierce"""
+
+            
+            x0, y0 = self.entity.x, self.entity.y
+            x1, y1 = self.target_xy
+            
+            # Get line of sight
+            line = tcod.los.bresenham((x0, y0), (x1, y1)).tolist()
+            
+            # Remove starting position
+            if line and line[0] == (x0, y0):
+                line.pop(0)
+            
+            targets = []
+            for x, y in line:
+                # Check for walls/blocking terrain
+                if not self.engine.game_map.tiles["transparent"][x, y]:
+                    break  # Can't shoot through walls
+                
+                # Check for actors
+                actor = self.engine.game_map.get_actor_at_location(x, y)
+                if actor and actor != self.entity:
+                    targets.append(actor)
+            
+            return targets
+        
+    def execute(self) -> None:
+        # Check ammo
+        if not self.weapon.has_ammo():
+            raise exceptions.Impossible(f"The {self.weapon.parent.name} is out of ammo!")
+        
+        # Check range
+        distance = max(
+            abs(self.target_xy[0] - self.entity.x),
+            abs(self.target_xy[1] - self.entity.y)
+        )
+        
+        if distance > self.weapon.max_range:
+            raise exceptions.Impossible("Target is out of range!")
+        
+        # Check line of sight
+        if not self.engine.game_map.visible[self.target_xy]:
+            raise exceptions.Impossible("You cannot target an area you cannot see!")
+        
+        # Consume ammo
+        self.weapon.consume_ammo(1)
+        
+        # Get all potential targets in line
+        targets = self.get_targets_in_line()
+        
+        if not targets:
+            self.engine.message_log.add_message(
+                f"{self.entity.name} fires the {self.weapon.parent.name} but misses!",
+                colour.player_atk if self.entity is self.engine.player else colour.enemy_atk
+            )
+            return
+        
+        # Apply damage with piercing
+        pierce_remaining = self.weapon.pierce
+        hit_count = 0
+        
+        for target in targets:
+            # Calculate if shot pierces this enemy
+            effective_defense = max(0, target.fighter.defence - pierce_remaining)
+            damage = max(0, self.weapon.damage - effective_defense)
+            
+            if damage > 0:
+                target.fighter.hp -= damage
+                hit_count += 1
+                
+                self.engine.message_log.add_message(
+                    f"{self.entity.name} shoots {target.name} for {damage} damage!",
+                    colour.player_atk if self.entity is self.engine.player else colour.enemy_atk
+                )
+                
+                # Reduce pierce after each hit
+                pierce_remaining = max(0, pierce_remaining - 1)
+                
+                # Stop if pierce runs out
+                if pierce_remaining < 0:
+                    break
+            else:
+                # Shot stopped by defense
+                self.engine.message_log.add_message(
+                    f"The shot is stopped by {target.name}'s armor!",
+                    colour.impossible
+                )
+                break
+        
+        # Ammo count message
+        if self.entity is self.engine.player:
+            self.engine.message_log.add_message(
+                f"Ammo: {self.weapon.current_ammo}/{self.weapon.max_ammo}",
+                colour.white
+            )
+
+
+class ReloadAction(Action):
+    """Reload a ranged weapon"""
+    ap_cost = 1
+    
+    def __init__(self, entity: Actor, weapon: RangedEquippable):
+        super().__init__(entity)
+        self.weapon = weapon
+    
+    def execute(self) -> None:
+        """Reload the weapon"""
+        if self.weapon.current_ammo == self.weapon.max_ammo:
+            raise exceptions.Impossible("Weapon is already fully loaded!")
+        
+        # TODO: Check for ammo in inventory when you add ammo items
+
+        reloaded = self.weapon.reload()
+        
+        self.engine.message_log.add_message(
+            f"You reload the {self.weapon.parent.name}. ({reloaded} rounds)",
+            colour.white
+        )

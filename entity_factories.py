@@ -10,6 +10,7 @@ from entity import Actor, Item
 import components.body_templates
 import random
 from components.body_modification import ExtraBrain, NumbDown, MuscleMAX
+from components.equippable import Pistol, Rifle, LaserPistol
 from equipment_types import ModificationType
 
 
@@ -136,4 +137,28 @@ big_arm_item = Item(
         modification_class=MuscleMAX,
         initial_level=1
     )
+)
+
+# Basic pistol
+pistol = Item(
+    glyph="~", 
+    colour=(150, 150, 150), 
+    name="Pistol",
+    equippable=Pistol()
+)
+
+# High-damage rifle
+rifle = Item(
+    glyph="~",
+    colour=(100, 100, 100),
+    name="Rifle", 
+    equippable=Rifle()
+)
+
+# Energy weapon
+laser_pistol = Item(
+    glyph="~",
+    colour=(0, 255, 255),
+    name="Laser Pistol",
+    equippable=LaserPistol()
 )

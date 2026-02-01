@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from render_order import RenderOrder
 from typing import Optional, Tuple,Type, TypeVar, TYPE_CHECKING, Union
 import copy
@@ -8,6 +9,7 @@ if TYPE_CHECKING:
     from components.consumable import Consumable
     from components.equipment import Equipment
     from components.equippable import Equippable
+    from components.equippable import RangedEquippable
     from components.fighter import Fighter
     from components.action_points import ActionPoints
     from components.inventory import Inventory
@@ -134,6 +136,7 @@ class Item(Entity):
             name:str = "<Unnamed>", 
             consumable: Optional[Consumable] = None,
             equippable: Optional[Equippable] = None,
+            ranged_weapon: Optional[RangedEquippable] = None,
         ):
         super().__init__(
             x=0,
@@ -153,5 +156,6 @@ class Item(Entity):
 
         if self.equippable:
             self.equippable.parent = self
+
 
 

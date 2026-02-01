@@ -82,29 +82,60 @@ class HostileEnemy(BaseAI):
     def __init__(self, entity: Actor):
         super().__init__(entity)
         self.path: List[Tuple[int, int]] = []
-
+        self.target: Optional[Actor] = None
+        self.target_last_seen_at: Optional[Tuple[int, int]] = None
+    
     def execute(self):
-
-        if not self.engine.game_map.visible[self.entity.x, self.entity.y]:
-            return None  # do nothing, no AP spent
-
-        target = self.engine.player
-
         ap = self.entity.action_points.ap
         if ap <= 0:
             return None
+        if not self.engine.game_map.visible[self.entity.x, self.entity.y]:
+            return None  # do nothing, no AP spent
         
-        dx = target.x - self.entity.x
-        dy = target.y -self.entity.y
-        distance = max(abs(dx), abs(dy)) # Chebyshev distance
-
-        if distance <=1:
+        self.target = self.engine.player
+        
+        # Update last seen position if we can see the player
+        if self.engine.game_map.visible[self.target.x, self.target.y]:
+            self.target_last_seen_at = (self.target.x, self.target.y)
+        
+        # If we have a last known position, use it
+        if self.target_last_seen_at:
+            t_x, t_y = self.target_last_seen_at
+        else:
+            return WaitAction(self.entity)
+        
+        # If we've reached the last known position, do one search move then forget
+        if (self.entity.x, self.entity.y) == (t_x, t_y):
+            self.target_last_seen_at = None
+            direction_x, direction_y = random.choice(
+                [
+                    (-1, -1), (0, -1), (1, -1),
+                    (-1, 0), (1, 0),
+                    (-1, 1), (0, 1), (1, 1),
+                ]
+            )
+            return BumpAction(self.entity, direction_x, direction_y)  # REMOVED .perform()
+        
+        # Calculate distance to target (use actual position if visible, else last seen)
+        if self.engine.game_map.visible[self.target.x, self.target.y]:
+            dx = self.target.x - self.entity.x
+            dy = self.target.y - self.entity.y
+        else:
+            dx = t_x - self.entity.x
+            dy = t_y - self.entity.y
+        
+        distance = max(abs(dx), abs(dy))
+        
+        # Melee if adjacent AND can see player
+        if distance <= 1 and self.engine.game_map.visible[self.target.x, self.target.y]:
             return MeleeAction(self.entity, dx, dy)
         
-        self.path = self.get_path_to(target.x, target.y)
+        # Pathfind to last known position
+        self.path = self.get_path_to(t_x, t_y)
         if self.path:
             dest_x, dest_y = self.path.pop(0)
             return MovementAction(
-                self.entity, dest_x-self.entity.x, dest_y-self.entity.y,
+                self.entity, dest_x - self.entity.x, dest_y - self.entity.y,
             )
+        
         return WaitAction(self.entity)
