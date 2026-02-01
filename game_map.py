@@ -23,6 +23,7 @@ class GameMap:
         self.explored = np.full((width, height), fill_value= False, order= "F")
         self.downstairs_location = (0, 0)
         self.upstairs_location = (0,0)
+        self.doors: dict = {}
 
     @property
     def gamemap(self)-> GameMap:

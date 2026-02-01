@@ -7,6 +7,7 @@ from soundmanager import SoundManager
 import colour
 import exceptions
 import random
+import tile_types
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -151,7 +152,17 @@ class ActionWithADirection(Action):
     
 class BumpAction(ActionWithADirection):
     ap_cost = 0 
-    def execute(self)->None:
+    def execute(self) -> None:
+        dest_x, dest_y = self.dest_xy
+        
+        # Check if there's a door at destination
+        if (dest_x, dest_y) in self.engine.game_map.doors:
+            is_open = self.engine.game_map.doors[(dest_x, dest_y)]
+            if not is_open:
+                return OpenAndMoveThroughDoorAction(self.entity, self.dx, self.dy).perform()
+            return MovementAction(self.entity, self.dx, self.dy).perform()
+        
+        # Normal bump behavior
         if self.target_actor:
             return MeleeAction(self.entity, self.dx, self.dy).perform()
         else:
@@ -290,3 +301,50 @@ class PickupAllAction(Action):
         self.engine.message_log.add_message(
             f"You picked up {len(picked_up)} items!"
         )
+
+class OpenAndMoveThroughDoorAction(ActionWithADirection):
+    """Open a door and move through it - costs 1 AP total"""
+    ap_cost = 1
+    
+    def execute(self) -> None:
+        dest_x, dest_y = self.dest_xy
+        
+        if (dest_x, dest_y) not in self.engine.game_map.doors:
+            raise exceptions.Impossible("There's no door there!")
+        
+        # Open the door
+        self.engine.game_map.tiles[dest_x, dest_y] = tile_types.door_open
+        self.engine.game_map.doors[(dest_x, dest_y)] = True
+        self.engine.message_log.add_message("You open the door and move through.")
+        
+        # Move through
+        self.entity.move(self.dx, self.dy)
+        self.engine.update_fov()
+
+
+class ToggleDoorAction(ActionWithADirection):
+    """Toggle door open/closed - costs NO AP"""
+    ap_cost = 0
+    
+    def execute(self) -> None:
+        dest_x, dest_y = self.dest_xy
+        
+        if (dest_x, dest_y) not in self.engine.game_map.doors:
+            raise exceptions.Impossible("There's no door there!")
+        
+        is_open = self.engine.game_map.doors[(dest_x, dest_y)]
+        
+        if is_open:
+            # Close door
+            if self.engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
+                raise exceptions.Impossible("Something is in the way!")
+            self.engine.game_map.tiles[dest_x, dest_y] = tile_types.door_closed
+            self.engine.game_map.doors[(dest_x, dest_y)] = False
+            self.engine.message_log.add_message("You close the door.")
+        else:
+            # Open door
+            self.engine.game_map.tiles[dest_x, dest_y] = tile_types.door_open
+            self.engine.game_map.doors[(dest_x, dest_y)] = True
+            self.engine.message_log.add_message("You open the door.")
+        
+        self.engine.update_fov()

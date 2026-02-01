@@ -153,6 +153,17 @@ def tunnels_between(start: Tuple[int, int], end: Tuple[int, int]) -> Iterator[Tu
     for x, y in tcod.los.bresenham( (corner_x, corner_y), (x2, y2)).tolist():
         yield x, y #special return that returns items one at a time instead of all at once like return
 
+def is_door_possible(station: GameMap, x: int, y: int) -> bool:
+    if (station.tiles[x-1, y] == tile_types.floor and station.tiles[x+1, y] == tile_types.floor and
+        station.tiles[x, y-1] != tile_types.floor and station.tiles[x, y+1] != tile_types.floor):
+        return True
+
+    if (station.tiles[x, y-1] == tile_types.floor and station.tiles[x, y+1] == tile_types.floor and
+        station.tiles[x-1, y] != tile_types.floor and station.tiles[x+1, y] != tile_types.floor):
+        return True
+
+    return False
+
 def generate_station(
         max_rooms: int, 
         room_min_size: int, 
@@ -198,6 +209,9 @@ def generate_station(
             
             station.tiles[new_room.area] = tile_types.floor
 
+            
+            
+
             if len(rooms) == 0:
                 center_of_first_room = (new_room.center)
                 player.place(*new_room.center, station)
@@ -236,11 +250,25 @@ def generate_station(
 
             place_entities(new_room, station, engine.game_world.current_floor)
             rooms.append(new_room)
+            
             center_of_last_room = new_room.center
+    
+    
     station.tiles[center_of_first_room] = tile_types.up_stairs
     station.upstairs_location = center_of_first_room
 
     station.tiles[center_of_last_room] = tile_types.down_stairs
     station.downstairs_location = center_of_last_room
+    
+    for room in rooms:
+        for x in range(room.x1, room.x2 + 1):
+            for y in range(room.y1, room.y2 + 1):
+                # Check only the wall boundary of the room
+                if x == room.x1 or x == room.x2 or y == room.y1 or y == room.y2:
+                    if station.tiles[x, y] == tile_types.floor:
+                        if is_door_possible(station, x, y):
+                            # 10% chance to skip or just place it
+                            station.tiles[x, y] = tile_types.door_closed
+                            station.doors[(x, y)] = False
 
     return station

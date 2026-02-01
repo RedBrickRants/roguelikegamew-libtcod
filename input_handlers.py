@@ -654,6 +654,8 @@ class MainGameEventHandler(EventHandler):
             return CharacterScreenEventHandler(self.engine)
         elif key == tcod.event.KeySym.SLASH:
             return EnemyLookHandler(self.engine)
+        elif key == tcod.event.KeySym.o:
+            return DoorDirectionHandler(self.engine)
 
 
         # No valid key was pressed
@@ -1053,3 +1055,23 @@ class PickupMenuHandler(AskUserEventHandler):
         
         return super().ev_keydown(event)
 
+class DoorDirectionHandler(AskUserEventHandler):
+    """Ask which direction to open/close a door (no AP cost)"""
+    
+    def on_render(self, console: tcod.console.Console) -> None:
+        super().on_render(console)
+        self.engine.message_log.add_message(
+            "Which direction? (movement keys or ESC to cancel)",
+            colour.needs_target
+        )
+    
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+        
+        if key in MOVE_KEYS:
+            dx, dy = MOVE_KEYS[key]
+            return actions.ToggleDoorAction(self.engine.player, dx, dy)
+        
+        # ESC or any other key cancels
+        return super().ev_keydown(event)
+    
