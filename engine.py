@@ -70,15 +70,21 @@ class Engine:
             if entity.ai:
                 while entity.action_points.can_act():
                     action = entity.ai.execute()
-                    if action is None: break
-                    action.perform() 
+                    if action is None: 
+                         break
 
-                    # Sequential Visuals & Sound spacing
-                    if self.context and self.root_console:
-                        if self.game_map.visible[entity.x, entity.y]:
-                            self.render(self.root_console)
-                            self.context.present(self.root_console)
-                            time.sleep(0.05)
+                    try:
+                         action.perform() 
+                              # Sequential Visuals & Sound spacing
+                         if self.context and self.root_console:
+                              if self.game_map.visible[entity.x, entity.y]:
+                                   self.render(self.root_console)
+                                   self.context.present(self.root_console)
+                                   time.sleep(0.05)
+                    except exceptions.Impossible:
+                        continue
+
+                    
           
 
      def update_fov(self) -> None:

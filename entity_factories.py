@@ -15,7 +15,7 @@ from equipment_types import ModificationType
 
 player = Actor(
     glyph="@", 
-    colour=(255, 255, 255), 
+    colour=(115, 147, 179), 
     name="Player",
     ai_cls=HostileEnemy,
     equipment=Equipment(),  

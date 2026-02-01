@@ -152,6 +152,13 @@ class ActionWithADirection(Action):
     
 class BumpAction(ActionWithADirection):
     ap_cost = 0 
+    def normal_bump_behavior(self) -> None:
+        # Normal bump behavior
+        if self.target_actor:
+            return MeleeAction(self.entity, self.dx, self.dy).perform()
+        else:
+            return MovementAction(self.entity, self.dx, self.dy).perform()
+        
     def execute(self) -> None:
         dest_x, dest_y = self.dest_xy
         
@@ -160,13 +167,9 @@ class BumpAction(ActionWithADirection):
             is_open = self.engine.game_map.doors[(dest_x, dest_y)]
             if not is_open:
                 return OpenAndMoveThroughDoorAction(self.entity, self.dx, self.dy).perform()
-            return MovementAction(self.entity, self.dx, self.dy).perform()
-        
-        # Normal bump behavior
-        if self.target_actor:
-            return MeleeAction(self.entity, self.dx, self.dy).perform()
-        else:
-            return MovementAction(self.entity, self.dx, self.dy).perform()
+            else:
+                return self.normal_bump_behavior()
+        self.normal_bump_behavior()       
         
 
 class MeleeAction(ActionWithADirection):
@@ -177,14 +180,14 @@ class MeleeAction(ActionWithADirection):
         current_ap = self.entity.action_points.ap
         
         if current_ap >= self.ap_cost:
-            # Normal attack - full cost
+            # Normal attack 
             return self.ap_cost
         elif current_ap > 0:
-            # Exhausted attack - spend whatever we have
+            # Exhausted attack
             return current_ap
         else:
             # No AP at all - can't attack
-            return self.ap_cost  # Will fail the spend check in perform()
+            return self.ap_cost  
 
     def execute(self) -> None:
         target = self.target_actor
