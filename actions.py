@@ -104,45 +104,89 @@ class EquipAction(Action):
 
     def execute(self) -> None:
         slots_needed = self.item.equippable.slot_amount
+        
         if slots_needed == 1:
-            # Check what's currently in this slot
-            current_item = self.entity.equipment.equipped_items.get(self.body_part)
+            # SINGLE-SLOT ITEM (like dagger, pistol)
             
-            if current_item and current_item.equippable.slot_amount > 1:
-                # Multi-slot item is equipped, need to unequip from all matching parts
-                matching_parts = [
-                    part for part in self.entity.body.parts 
-                    if part.part_type == self.body_part.part_type
-                ]
-                
+            # Get all matching parts (e.g., all arms)
+            matching_parts = [
+                part for part in self.entity.body.parts 
+                if part.part_type == self.body_part.part_type
+            ]
+            
+            # Check if ANY matching part has a 2-handed weapon equipped
+            multi_slot_item = None
+            for part in matching_parts:
+                current = self.entity.equipment.equipped_items.get(part)
+                if current and current.equippable.slot_amount > 1:
+                    multi_slot_item = current
+                    break
+            
+            # If there's a 2-handed weapon, unequip it from ALL matching parts
+            if multi_slot_item:
                 for part in matching_parts:
-                    if self.entity.equipment.equipped_items.get(part) == current_item:
+                    if self.entity.equipment.equipped_items.get(part) == multi_slot_item:
                         self.entity.equipment.unequip_from_part(part, add_message=False)
                 
                 self.engine.message_log.add_message(
-                    f"You unequip the {current_item.name}."
+                    f"You unequip the {multi_slot_item.name}."
                 )
             
-            # Now equip the new item normally
+            # Now equip the single-slot item normally
             self.entity.equipment.toggle_equip(self.item, self.body_part)
-        elif slots_needed > 1:
+            
+        elif slots_needed == 2:
+            # TWO-HANDED WEAPON (like rifle)
+            
+            # Get all matching parts
             matching_parts = [
-            part for part in self.entity.body.parts 
-            if part.part_type == self.body_part.part_type
-        ]
+                part for part in self.entity.body.parts 
+                if part.part_type == self.body_part.part_type
+            ]
+            
+            # Validate we have enough parts
             if len(matching_parts) < 2:
-                raise exceptions.Impossible(f"Not enough {self.body_part.part_type.name} parts to equip {self.item.name}.")
+                raise exceptions.Impossible(
+                    f"You need 2 {self.body_part.part_type.name}s to equip {self.item.name}!"
+                )
             
-            blocked_parts = [part for part in matching_parts if self.entity.equipment.equipped_items.get(part) is not None]
-            if blocked_parts:
-                for part in blocked_parts:
+            # Use only the first 2 matching parts
+            parts_to_use = matching_parts[:2]
+            
+            # Check if this item is already equipped on both parts
+            already_equipped = all(
+                self.entity.equipment.equipped_items.get(part) == self.item 
+                for part in parts_to_use
+            )
+            
+            if already_equipped:
+                # UNEQUIP the 2-handed weapon from both slots
+                for part in parts_to_use:
                     self.entity.equipment.unequip_from_part(part, add_message=False)
-            
-            for part in matching_parts:
-                self.entity.equipment.equip_to_part(part, self.item, add_message=False)
-            
-            self.engine.message_log.add_message(
-                f"You equip the {self.item.name} with both hands."
+                
+                self.engine.message_log.add_message(
+                    f"You unequip the {self.item.name}."
+                )
+            else:
+                # EQUIP the 2-handed weapon
+                
+                # First, unequip anything in the way
+                for part in parts_to_use:
+                    current = self.entity.equipment.equipped_items.get(part)
+                    if current:
+                        self.entity.equipment.unequip_from_part(part, add_message=False)
+                
+                # Then equip to both parts
+                for part in parts_to_use:
+                    self.entity.equipment.equip_to_part(part, self.item, add_message=False)
+                
+                self.engine.message_log.add_message(
+                    f"You equip the {self.item.name} with both hands."
+                )
+        else:
+            # Handle 3+ slots if needed in future
+            raise exceptions.Impossible(
+                f"Cannot equip items requiring {slots_needed} slots!"
             )
         
 class WaitAction(Action):
